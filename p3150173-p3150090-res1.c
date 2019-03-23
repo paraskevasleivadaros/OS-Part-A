@@ -10,8 +10,8 @@ int main(int argc, char* argv[]){
 
     // Converting string type to integer type
     // using function atoi
-    int ncust = strtol(argv[1]);
-    int seed = strtol(argv[2]);
+    int ncust = atoi(argv[1]);
+    int seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive or not
     if (ncust < 0 || seed < 0){
