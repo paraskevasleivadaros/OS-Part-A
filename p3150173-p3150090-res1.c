@@ -6,6 +6,8 @@
 double profit = 0.0;
 int transcations = 0;
 
+// static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int main(int argc, char* argv[]){
 
     // Converting string type to integer type

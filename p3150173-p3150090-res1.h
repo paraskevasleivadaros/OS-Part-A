@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+// #include <pthread.h>
 
 #define N_SEATS 250
 #define N_TEL 8
