@@ -16,7 +16,7 @@ int main(int argc, char* argv[]){
     int seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive
-    if (ncust < 0 || seed < 0){
+    if (ncust <= 0 || seed < 0){
         printf("Please enter only positive values in arguments!");
         exit(1);
     }
