@@ -1,9 +1,13 @@
 # POSIX-Threads
 Project for the course "Λειτουργικά Συστήματα" | CS - AUEB
 
+## Διάγραμμα
+
 ![Theater Threads](https://github.com/paraskevasleivadaros/POSIX-Threads/blob/master/Theater%20%20-%20UML%20Diagram/Theater%20Threads.png)
 
-1 νήμα για κάθε πελάτη
+## Σημειώσεις
+
+1 νήμα για κάθε πελάτη <br>
 1 νήμα για κάθε τηλεφωνητή
 
 Δεν ξέρουμε ποιος θα πάρει πρώτος χρόνο CPU!
