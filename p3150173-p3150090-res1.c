@@ -4,7 +4,7 @@
 #include "p3150173-p3150090-res1.h"
 
 double profit = 0.0;
-int transcations = 0;
+int transactions = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -12,14 +12,50 @@ int main(int argc, char* argv[]){
 
     // Converting string type to integer type
     // using function atoi
-    int ncust = atoi(argv[1]);
+    int N_CUST = atoi(argv[1]);
     int seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive
-    if (ncust <= 0 || seed < 0){
+    if (N_CUST <= 0 || seed <= 0){
         printf("Please enter only positive values in arguments!");
         exit(1);
     }
+
+    printf("customers = %d, seed = %d", N_CUST, seed);
+
+    srand(seed);
+
+    int N_SEATS_LEFT = N_SEATS;
+    int N_CHOICE;
+
+    while (N_CUST !=0){
+        printf("\nHow many seats would you like to book:");
+        scanf("%d", &N_CHOICE);
+        if (N_CHOICE<N_SEAT_HIGH+1 && N_CHOICE > N_SEAT_LOW-1){
+            if (N_CHOICE<=N_SEATS_LEFT){
+                N_SEATS_LEFT -= N_CHOICE;
+                if (P_CARD_SUCCESS*rand()){
+                    profit += N_CHOICE*C_SEAT;
+                    ++transactions;
+                    printf("Success: Your seats are booked :)");
+                }else{
+                    N_SEATS_LEFT+=N_CHOICE;
+                    printf("Error: Your card failed :(");
+                }
+            } else {
+                printf("Error: Number of seats to book exceeds number of seats left");
+            }
+        } else {
+            printf("Error: You cannot book %d seats", N_CHOICE);
+        }
+        --N_CUST;
+    }
+    printf("\nAll served!\nExiting..");
+}
+
+
+
+
 
 // std::mutex m;//you can use std::lock_guard if you want to be exception safe
 // int i = 0;
@@ -51,6 +87,3 @@ int main(int argc, char* argv[]){
 //        man3.join();//man3 finished his phone call and joins the crowd
 //        return 0;
 //    }
-    printf("customers = %d, seed = %d", ncust, seed);
-
-}
