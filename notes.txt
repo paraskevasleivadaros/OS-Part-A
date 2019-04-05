@@ -18,3 +18,6 @@ pthreads API, τα mutexes είναι κλειδαριές (duh)
 
 Ιδέες:
 Πίνακας N_CUST από pointers που δείχνουν σε arrays που περιέχουν τις θέσεις που έχει κλείσει ο κάθε πελάτης
+
+
+[Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία](https://eclass.aueb.gr/modules/wiki/page.php?course=INF168&wikiId=3941&action=show "Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία")
