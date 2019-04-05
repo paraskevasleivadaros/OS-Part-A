@@ -29,10 +29,14 @@ int main(int argc, char* argv[]){
     int N_CHOICE;
 
     while (N_CUST !=0){
+
         printf("\nHow many seats would you like to book:");
         scanf("%d", &N_CHOICE);
+
         if (N_CHOICE<N_SEAT_HIGH+1 && N_CHOICE > N_SEAT_LOW-1){
+
             if (N_CHOICE<=N_SEATS_LEFT){
+
                 N_SEATS_LEFT -= N_CHOICE;
                 if (P_CARD_SUCCESS*rand()){
                     profit += N_CHOICE*C_SEAT;
@@ -42,15 +46,18 @@ int main(int argc, char* argv[]){
                     N_SEATS_LEFT+=N_CHOICE;
                     printf("Error: Your card failed :(");
                 }
+
             } else {
                 printf("Error: Number of seats to book exceeds number of seats left");
             }
+
         } else {
             printf("Error: You cannot book %d seats", N_CHOICE);
         }
+
         --N_CUST;
     }
-    printf("\nAll served!\nExiting..");
+    printf("\nAll served!\nGoodbye..");
 }
 
 
