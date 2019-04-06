@@ -9,7 +9,7 @@ int transactions = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t threads[N_TEL];
 
-void bookSeats(int, int);
+void* bookSeats(int, int);
 
 int main(int argc, char* argv[]){
 
@@ -27,27 +27,31 @@ int main(int argc, char* argv[]){
     // printf("customers = %d, seed = %d", customers, seed);
 
     int arr[] = {1,2,3,4,5,6,7,8};
-    time_t start = time(NULL);
+
+    // Calculate time taken by a request
+    struct timespec requestStart, requestEnd;
+
+    // clock_gettime(CLOCK_REALTIME, &requestStart);
+
     printf("Threads starting...");
 
     for(int i=0; i<8; i++) {
-        if (pthread_create(&threads[i], NULL, WILL_FIX_LATER, arr)) {
+        if (pthread_create(&threads[i], NULL, bookSeats(customers, seed), (void*)&arr)) {
             printf((const char *) stderr, "Thread Creation Error :(");
             exit(1);
         }
     }
 
-    bookSeats(customers, seed);
-
     for (int i=0; i<8; i++) {
         pthread_join(threads[i], NULL);
     }
 
-    printf("%.4f\n", (double)(time(NULL) - start));
+    // clock_gettime(CLOCK_REALTIME, &requestEnd);
+
     printf("\nAll served!\nGoodbye..");
 }
 
-void bookSeats(int N_CUST, int seed) {
+void* bookSeats(int N_CUST, int seed) {
 
     srand(seed);
 
@@ -83,6 +87,7 @@ void bookSeats(int N_CUST, int seed) {
 
         --N_CUST;
     }
+    pthread_exit(NULL);
 }
 
 
