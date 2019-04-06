@@ -29,8 +29,7 @@ int main(int argc, char* argv[]){
     int arr[] = {1,2,3,4,5,6,7,8};
 
     // Calculate time taken by a request
-    struct timespec requestStart, requestEnd;
-
+    // struct timespec requestStart, requestEnd;
     // clock_gettime(CLOCK_REALTIME, &requestStart);
 
     printf("Threads starting...");
