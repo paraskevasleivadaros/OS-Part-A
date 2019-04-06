@@ -13,11 +13,11 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define N_SEATS 250
-#define N_TEL 8
-#define N_SEAT_LOW 1
-#define N_SEAT_HIGH 5
-#define T_SEAT_LOW 5
-#define T_SEAT_HIGH 10
-#define P_CARD_SUCCESS 0.9
-#define C_SEAT 20
+const int N_SEATS = 250;
+const int N_TEL = 8;
+const int N_SEAT_LOW = 1;
+const int N_SEAT_HIGH = 5;
+const int T_SEAT_LOW = 5;
+const int T_SEAT_HIGH = 10;
+const double P_CARD_SUCCESS = 0.9;
+const double C_SEAT = 20;
