@@ -2,6 +2,7 @@
   <dictionary name="paras">
     <words>
       <w>gettime</w>
+      <w>lpthread</w>
       <w>ncust</w>
     </words>
   </dictionary>
