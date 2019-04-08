@@ -4,7 +4,7 @@
 
 #include "p3150173-p3150090-res1.h"
 
-void* bookSeats(void *, int);
+void *bookSeats(void *);
 int random(int, int);
 void startTimer();
 void stopTimer();
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
     // using function atoi
     int customers = atoi(argv[1]);
     int seed = atoi(argv[2]);
-
+    srand(seed);
     // Checking if all provided numbers are positive
     if (customers <= 0 || seed <= 0){
         printf("Please enter only positive values in arguments!");
@@ -37,15 +37,17 @@ int main(int argc, char* argv[]){
     }
 
     startTimer();
-
-    while(customers!=0){
+    printf("Number of customers to be served: %d\n", customers);
+    int counter=0;
+    while(customers>0){
         for (int i = 0; i < N_TEL; i++) {
             id[i] = i + 1;
-            if ((rc= pthread_create(&threads[i], NULL, bookSeats(id, seed), (void *) id[i]))) {
-                printf((const char *) stderr, "Thread Creation Error :(");
+            counter += 1;
+            printf("Creating Thread %d\n", counter);
+            if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
+                printf("Thread Creation Error :(");
                 exit(1);
             } else {
-                printf("Main: Creating thread %d\n", i + 1);
                 --customers;
             }
         }
@@ -54,6 +56,7 @@ int main(int argc, char* argv[]){
             pthread_join(threads[i], NULL);
         }
     }
+    printf("Number of customers served: %d\n\n", counter);
 
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
@@ -63,13 +66,11 @@ int main(int argc, char* argv[]){
     printf("\nAll served!\nGoodbye..");
 }
 
-void* bookSeats(void *x, int seed) {
+void *bookSeats(void *x) {
 
-    srand(seed);
-
-    int id = (int) x;
+    int id = (int *) x;
     int rc;
-    printf("Hello from telephonist: %d\n", id);
+    printf("Hello from telephonist %d\n", id);
     rc = pthread_mutex_lock(&lock);
 
     while (N_TEL_LEFT == 0) {
@@ -77,8 +78,8 @@ void* bookSeats(void *x, int seed) {
         rc = pthread_cond_wait(&cond, &lock);
     }
 
-    printf("The customer %d, is being served.\n", id);
-    N_TEL_LEFT--;
+    printf("The customer %d is being served.\n", id);
+    --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
     int N_CHOICE = random(N_SEAT_LOW, N_SEAT_HIGH);
@@ -90,18 +91,18 @@ void* bookSeats(void *x, int seed) {
         if (P_CARD_SUCCESS * (rand() % 2)) {
             profit += N_CHOICE * C_SEAT;
             ++transactions;
-            printf("Success: Your seats are booked :)");
+            printf("Success: Seats of %d are booked :)\n", id);
         } else {
             N_SEATS_LEFT += N_CHOICE;
-            printf((const char *) stderr, "Error: Your card failed :(");
+            printf("Card of %d failed :(\n", id);
         }
 
     } else {
-        printf((const char *) stderr, "Error: Number of seats to book exceeds number of seats left");
+        printf("Not enough seats left to book\n");
     }
 
     rc = pthread_mutex_lock(&lock);
-    printf("The customer %d was served successfully! \n", id);
+    printf("The customer %d was served successfully!\n", id);
     N_TEL_LEFT++;
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
@@ -113,7 +114,7 @@ int random(int min, int max){
 }
 
 void startTimer(){
-    printf("\nStarting Clock");
+    printf("Starting Clock\n\n");
     // Calculate time taken by a request
     struct timespec requestStart, requestEnd;
     // clock_gettime(CLOCK_REALTIME, &requestStart);
