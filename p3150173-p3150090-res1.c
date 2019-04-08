@@ -16,6 +16,9 @@ int transactions = 0;
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
 
+// Calculate time taken by a request
+struct timespec requestStart, requestEnd;
+
 pthread_mutex_t lock;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
@@ -31,6 +34,7 @@ int main(int argc, char* argv[]){
     int customers = atoi(argv[1]);
     int seed = atoi(argv[2]);
     srand(seed);
+
     // Checking if all provided numbers are positive
     if (customers <= 0 || seed <= 0){
         printf("Please enter only positive values in arguments!");
@@ -41,19 +45,22 @@ int main(int argc, char* argv[]){
 
     printf("Customers to be served: %d\n", customers);
 
-    int temp = customers;
+    int N_CUST = customers;
     int counter=0;
-    int stop =1;
-    while(customers>0 && stop){
+    int flag =1;
+
+    while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
 
             id[i] = i + 1;
-            counter += 1;
-            if (counter>temp) {
-                counter--;
-                stop = 0;
+            ++counter;
+
+            if (counter>N_CUST) {
+                --counter;
+                flag = 0;
                 break;
             }
+
             printf("Creating Thread %d\n", counter);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
                 printf("Thread Creation Error");
@@ -72,6 +79,9 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
 
     stopTimer();
+
+    printf("Duration: %lld\n\n", (requestStart.tv_sec - requestEnd.tv_sec));
+
     printf("Number of customers served: %d\n", counter);
     printf("Number of seats booked: %d\n", N_SEATS_LEFT+N_SEATS);
     printf("Number of transactions: %d\n", transactions);
@@ -82,7 +92,7 @@ int main(int argc, char* argv[]){
 
 void *bookSeats(void *x) {
 
-    int id = (int *) x;
+    int id = (int) (int *) x;
     int rc;
     printf("Telephonist %d in line.\n", id);
     rc = pthread_mutex_lock(&lock);
@@ -103,7 +113,7 @@ void *bookSeats(void *x) {
         sleep(random(T_SEAT_LOW, T_SEAT_HIGH));
         N_SEATS_LEFT -= N_CHOICE;
 
-        if (f_random(0.0, 1.0) > P_CARD_SUCCESS) {
+        if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
             profit += N_CHOICE * C_SEAT;
             ++transactions;
             printf("Customer %d seats booked\n", id);
@@ -122,6 +132,7 @@ void *bookSeats(void *x) {
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
     pthread_exit(NULL); //return
+    return NULL;
 }
 
 int random(int min, int max){
@@ -135,12 +146,10 @@ double f_random(double min, double max){
 
 void startTimer(){
     printf("Starting Clock\n\n");
-    // Calculate time taken by a request
-    struct timespec requestStart, requestEnd;
     // clock_gettime(CLOCK_REALTIME, &requestStart);
 }
 
 void stopTimer(){
-    printf("\nStopping Clock\n");
+    printf("\nStopping Clock\n\n");
     // clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
