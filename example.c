@@ -30,6 +30,7 @@ int main() {
 }
 
 void *customer(void *x) {
+
     int id = (int *) x;
     int rc;
     printf("Hello from customer: %d\n", id);

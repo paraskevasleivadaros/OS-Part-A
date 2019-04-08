@@ -3,20 +3,26 @@
 //
 #include "p3150173-p3150090-res1.h"
 
-void* bookSeats(int, int);
+void* bookSeats(void *, int);
+int random(int, int);
+void startTimer();
+void stopTimer();
 
 double profit = 0.0;
 int transactions = 0;
+
+int N_TEL_LEFT = N_TEL;
+int N_SEATS_LEFT = N_SEATS;
 
 pthread_mutex_t lock;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
 
-    pthread_t threads[N_TEL];
     int rc;
-    pthread_mutex_init(&lock, NULL);
+    pthread_t threads[N_TEL];
     int id[N_TEL];
+    pthread_mutex_init(&lock, NULL);
 
     // Converting string type to integer type
     // using function atoi
@@ -29,77 +35,90 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    // Calculate time taken by a request
-    struct timespec requestStart, requestEnd;
-    // clock_gettime(CLOCK_REALTIME, &requestStart);
+    startTimer();
 
-    printf("Threads starting...");
-
-    for(int i=0; i<N_TEL; i++) {
-        id[i] = i + 1;
-        rc = pthread_create(&threads[i], NULL, bookSeats(customers, seed), (void *) id[i]);
-        if (rc) {
-            printf((const char *) stderr, "Thread Creation Error :(");
-            exit(1);
-        } else {
-            printf("Main: creating thread %d\n", i + 1);
+    while(customers!=0){
+        for (int i = 0; i < N_TEL; i++) {
+            id[i] = i + 1;
+            if ((rc= pthread_create(&threads[i], NULL, bookSeats(id, seed), (void *) id[i]))) {
+                printf((const char *) stderr, "Thread Creation Error :(");
+                exit(1);
+            } else {
+                printf("Main: creating thread %d\n", i + 1);
+                --customers;
+            }
         }
-    }
 
-    for (int i=0; i<8; i++) {
-        pthread_join(threads[i], NULL);
+        for (int i = 0; i < N_TEL; i++) {
+            pthread_join(threads[i], NULL);
+        }
     }
 
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
-    // clock_gettime(CLOCK_REALTIME, &requestEnd);
+
+    stopTimer();
 
     printf("\nAll served!\nGoodbye..");
 }
 
-void* bookSeats(int N_CUST, int seed) {
+void* bookSeats(void *x, int seed) {
 
     srand(seed);
+
+    int id = (int) x;
     int rc;
-
+    printf("Hello from telephonist: %d\n", id);
     rc = pthread_mutex_lock(&lock);
-    rc = pthread_cond_wait(&cond, &lock);
+
+    while (N_TEL_LEFT == 0) {
+        printf("The customer %d, couldn't find telephonist available. Blocked...\n", id);
+        rc = pthread_cond_wait(&cond, &lock);
+    }
+
+    printf("The customer %d, is being served.\n", id);
+    N_TEL_LEFT--;
     rc = pthread_mutex_unlock(&lock);
-    rc = pthread_mutex_lock(&lock);
-    rc = pthread_cond_signal(&cond);
-    rc = pthread_mutex_unlock(&lock);
 
-    int N_SEATS_LEFT = N_SEATS;
-    int N_CHOICE;
+    int N_CHOICE = random(N_SEAT_LOW, N_SEAT_HIGH);
+    if (N_CHOICE <= N_SEATS_LEFT) {
 
-    while (N_CUST != 0) {
+        sleep(random(T_SEAT_LOW, T_SEAT_HIGH));
+        N_SEATS_LEFT -= N_CHOICE;
 
-        printf("\nHow many seats would you like to book: ");
-        scanf("%d", &N_CHOICE);
-
-        if (N_CHOICE < N_SEAT_HIGH + 1 && N_CHOICE > N_SEAT_LOW - 1) {
-
-            if (N_CHOICE <= N_SEATS_LEFT) {
-
-                N_SEATS_LEFT -= N_CHOICE;
-                if (P_CARD_SUCCESS * rand()) {
-                    profit += N_CHOICE * C_SEAT;
-                    ++transactions;
-                    printf("Success: Your seats are booked :)");
-                } else {
-                    N_SEATS_LEFT += N_CHOICE;
-                    printf((const char *) stderr, "Error: Your card failed :(");
-                }
-
-            } else {
-                printf((const char *) stderr, "Error: Number of seats to book exceeds number of seats left");
-            }
-
+        if (P_CARD_SUCCESS * (rand() % 2)) {
+            profit += N_CHOICE * C_SEAT;
+            ++transactions;
+            printf("Success: Your seats are booked :)");
         } else {
-            printf((const char *) stderr, "Error: You cannot book %d seats", N_CHOICE);
+            N_SEATS_LEFT += N_CHOICE;
+            printf((const char *) stderr, "Error: Your card failed :(");
         }
 
-        --N_CUST;
+    } else {
+        printf((const char *) stderr, "Error: Number of seats to book exceeds number of seats left");
     }
-    pthread_exit(NULL);
+
+    rc = pthread_mutex_lock(&lock);
+    printf("The customer %d was served successfully! \n", id);
+    N_TEL_LEFT++;
+    rc = pthread_cond_signal(&cond);
+    rc = pthread_mutex_unlock(&lock);
+    pthread_exit(NULL); //return
+}
+
+int random(int min, int max){
+    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
+}
+
+void startTimer(){
+    printf("\nStarting Clock");
+    // Calculate time taken by a request
+    struct timespec requestStart, requestEnd;
+    // clock_gettime(CLOCK_REALTIME, &requestStart);
+}
+
+void stopTimer(){
+    printf("\nStopping Clock");
+    // clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
