@@ -6,10 +6,11 @@
 
 void *bookSeats(void *);
 int random(int, int);
+double f_random(double, double);
 void startTimer();
 void stopTimer();
 
-double profit = 0.0;
+int profit = 0;
 int transactions = 0;
 
 int N_TEL_LEFT = N_TEL;
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]){
 
     startTimer();
 
-    printf("Number of customers to be served: %d\n", customers);
+    printf("Customers to be served: %d\n", customers);
 
     int temp = customers;
     int counter=0;
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]){
             }
             printf("Creating Thread %d\n", counter);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
-                printf("Thread Creation Error :(");
+                printf("Thread Creation Error");
                 exit(1);
             } else {
                 --customers;
@@ -83,39 +84,40 @@ void *bookSeats(void *x) {
 
     int id = (int *) x;
     int rc;
-    printf("Hello from telephonist %d\n", id);
+    printf("Telephonist %d in line.\n", id);
     rc = pthread_mutex_lock(&lock);
 
     while (N_TEL_LEFT == 0) {
-        printf("The customer %d, couldn't find telephonist available. Blocked...\n", id);
+        printf("Customer %d couldn't find telephonist available. Blocked...\n", id);
         rc = pthread_cond_wait(&cond, &lock);
     }
 
-    printf("The customer %d is being served.\n", id);
+    printf("Customer %d being served.\n", id);
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
     int N_CHOICE = random(N_SEAT_LOW, N_SEAT_HIGH);
+
     if (N_CHOICE <= N_SEATS_LEFT) {
 
         sleep(random(T_SEAT_LOW, T_SEAT_HIGH));
         N_SEATS_LEFT -= N_CHOICE;
 
-        if (random(0,1) < P_CARD_SUCCESS ) {
+        if (f_random(0.0, 1.0) > P_CARD_SUCCESS) {
             profit += N_CHOICE * C_SEAT;
-            transactions++;
-            printf("Success: Seats of %d are booked :)\n", id);
+            ++transactions;
+            printf("Customer %d seats booked\n", id);
         } else {
             N_SEATS_LEFT += N_CHOICE;
-            printf("Card of %d failed :(\n", id);
+            printf("Card of Customer %d failed :(\n", id);
         }
 
     } else {
-        printf("Not enough seats left to book\n");
+        printf("Not enough seats left to book.\n");
     }
 
     rc = pthread_mutex_lock(&lock);
-    printf("The customer %d was served successfully!\n", id);
+    printf("Customer %d served successfully!\n", id);
     N_TEL_LEFT++;
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
@@ -126,6 +128,11 @@ int random(int min, int max){
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
+double f_random(double min, double max){
+    double f = (double)rand() / RAND_MAX;
+    return min + f * (max - min);
+}
+
 void startTimer(){
     printf("Starting Clock\n\n");
     // Calculate time taken by a request
@@ -134,6 +141,6 @@ void startTimer(){
 }
 
 void stopTimer(){
-    printf("Stopping Clock\n");
+    printf("\nStopping Clock\n");
     // clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
