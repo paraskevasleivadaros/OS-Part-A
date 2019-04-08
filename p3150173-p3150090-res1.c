@@ -37,12 +37,22 @@ int main(int argc, char* argv[]){
     }
 
     startTimer();
+
     printf("Number of customers to be served: %d\n", customers);
+
+    int temp = customers;
     int counter=0;
-    while(customers>0){
+    int stop =1;
+    while(customers>0 && stop){
         for (int i = 0; i < N_TEL; i++) {
+
             id[i] = i + 1;
             counter += 1;
+            if (counter>temp) {
+                counter--;
+                stop = 0;
+                break;
+            }
             printf("Creating Thread %d\n", counter);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
                 printf("Thread Creation Error :(");
@@ -56,14 +66,17 @@ int main(int argc, char* argv[]){
             pthread_join(threads[i], NULL);
         }
     }
-    printf("Number of customers served: %d\n\n", counter);
 
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
 
     stopTimer();
+    printf("Number of customers served: %d\n", counter);
+    printf("Number of seats booked: %d\n", N_SEATS_LEFT+N_SEATS);
+    printf("Number of transactions: %d\n", transactions);
+    printf("Profits: %d\n", profit);
 
-    printf("\nAll served!\nGoodbye..");
+    printf("\nExiting..");
 }
 
 void *bookSeats(void *x) {
@@ -88,9 +101,9 @@ void *bookSeats(void *x) {
         sleep(random(T_SEAT_LOW, T_SEAT_HIGH));
         N_SEATS_LEFT -= N_CHOICE;
 
-        if (P_CARD_SUCCESS * (rand() % 2)) {
+        if (random(0,1) < P_CARD_SUCCESS ) {
             profit += N_CHOICE * C_SEAT;
-            ++transactions;
+            transactions++;
             printf("Success: Seats of %d are booked :)\n", id);
         } else {
             N_SEATS_LEFT += N_CHOICE;
@@ -121,6 +134,6 @@ void startTimer(){
 }
 
 void stopTimer(){
-    printf("\nStopping Clock");
+    printf("Stopping Clock\n");
     // clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
