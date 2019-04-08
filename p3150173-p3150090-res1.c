@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
                 printf((const char *) stderr, "Thread Creation Error :(");
                 exit(1);
             } else {
-                printf("Main: creating thread %d\n", i + 1);
+                printf("Main: Creating thread %d\n", i + 1);
                 --customers;
             }
         }
