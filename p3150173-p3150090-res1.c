@@ -3,15 +3,20 @@
 //
 #include "p3150173-p3150090-res1.h"
 
+void* bookSeats(int, int);
+
 double profit = 0.0;
 int transactions = 0;
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_t threads[N_TEL];
-
-void* bookSeats(int, int);
+pthread_mutex_t lock;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
+
+    pthread_t threads[N_TEL];
+    int rc;
+    pthread_mutex_init(&lock, NULL);
+    int id[N_TEL];
 
     // Converting string type to integer type
     // using function atoi
@@ -24,20 +29,20 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    // printf("customers = %d, seed = %d", customers, seed);
-
-    int arr[] = {1,2,3,4,5,6,7,8};
-
     // Calculate time taken by a request
-    // struct timespec requestStart, requestEnd;
+    struct timespec requestStart, requestEnd;
     // clock_gettime(CLOCK_REALTIME, &requestStart);
 
     printf("Threads starting...");
 
-    for(int i=0; i<8; i++) {
-        if (pthread_create(&threads[i], NULL, bookSeats(customers, seed), (void*)&arr)) {
+    for(int i=0; i<N_TEL; i++) {
+        id[i] = i + 1;
+        rc = pthread_create(&threads[i], NULL, bookSeats(customers, seed), (void *) id[i]);
+        if (rc) {
             printf((const char *) stderr, "Thread Creation Error :(");
             exit(1);
+        } else {
+            printf("Main: creating thread %d\n", i + 1);
         }
     }
 
@@ -45,6 +50,8 @@ int main(int argc, char* argv[]){
         pthread_join(threads[i], NULL);
     }
 
+    pthread_mutex_destroy(&lock);
+    pthread_cond_destroy(&cond);
     // clock_gettime(CLOCK_REALTIME, &requestEnd);
 
     printf("\nAll served!\nGoodbye..");
@@ -53,6 +60,14 @@ int main(int argc, char* argv[]){
 void* bookSeats(int N_CUST, int seed) {
 
     srand(seed);
+    int rc;
+
+    rc = pthread_mutex_lock(&lock);
+    rc = pthread_cond_wait(&cond, &lock);
+    rc = pthread_mutex_unlock(&lock);
+    rc = pthread_mutex_lock(&lock);
+    rc = pthread_cond_signal(&cond);
+    rc = pthread_mutex_unlock(&lock);
 
     int N_SEATS_LEFT = N_SEATS;
     int N_CHOICE;
