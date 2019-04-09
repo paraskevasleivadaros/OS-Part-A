@@ -5,7 +5,7 @@
 #include "p3150173-p3150090-res1.h"
 
 void *bookSeats(void *);
-int random1(int, int);
+int i_random(int, int);
 double f_random(double, double);
 void startTimer();
 void stopTimer();
@@ -42,9 +42,9 @@ int main(int argc, char* argv[]){
 
     srand(seed);
 
-    startTimer();
+    printf("Customers to be served: %d\n\n", customers);
 
-    printf("Customers to be served: %d\n", customers);
+    startTimer();
 
     int N_CUST = customers;
     int counter=0;
@@ -108,11 +108,11 @@ void *bookSeats(void *x) {
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
-    int N_CHOICE = random1(N_SEAT_LOW, N_SEAT_HIGH);
+    int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
     if (N_CHOICE <= N_SEATS_LEFT) {
 
-        sleep(random1(T_SEAT_LOW, T_SEAT_HIGH));
+        sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 
         rc = pthread_mutex_lock(&lock);
         N_SEATS_LEFT -= N_CHOICE;
@@ -144,7 +144,7 @@ void *bookSeats(void *x) {
     return NULL;
 }
 
-int random1(int min, int max){
+int i_random(int min, int max){
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
