@@ -54,8 +54,9 @@ int main(int argc, char* argv[]){
     while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
 
-            id[i] = i + 1;
+
             ++cust_id;
+            id[i] = cust_id;
 
             if (cust_id>N_CUST) {
                 --cust_id;
@@ -97,7 +98,7 @@ void *bookSeats(void *x) {
 
     int id = (int) (int *) x;
     int rc;
-    printf("Telephonist %d in line.\n", id);
+    printf("Telephonist %d in line.\n", (id%8+1));
 
     rc = pthread_mutex_lock(&lock);
 
