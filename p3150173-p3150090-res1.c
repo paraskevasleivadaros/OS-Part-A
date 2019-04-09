@@ -74,10 +74,6 @@ int main(int argc, char* argv[]){
                 --customers;
             }
         }
-
-        for (int i = 0; i < N_TEL; i++) {
-            pthread_join(threads[i], NULL);
-        }
     }
 
     stopTimer();
@@ -85,13 +81,13 @@ int main(int argc, char* argv[]){
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
 
-    printf("Duration: %ld\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
+    printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
 
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
-    printf("Profits: %d\n", profit);
+    printf("Profits: %d \u20AC", profit);
 
     printf("\nExiting..");
 }
@@ -112,7 +108,7 @@ void *bookSeats(void *x) {
         rc = pthread_cond_wait(&cond, &lock);
     }
     showClock();
-    printf("Customer %d being served.\n", id);
+    printf("Customer %d being served..\n", id);
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
