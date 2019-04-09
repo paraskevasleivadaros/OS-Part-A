@@ -33,13 +33,14 @@ int main(int argc, char* argv[]){
     // using function atoi
     int customers = atoi(argv[1]);
     int seed = atoi(argv[2]);
-    srand(seed);
 
     // Checking if all provided numbers are positive
     if (customers <= 0 || seed <= 0){
         printf("Please enter only positive values in arguments!");
         exit(1);
     }
+
+    srand(seed);
 
     startTimer();
 
@@ -83,8 +84,9 @@ int main(int argc, char* argv[]){
     printf("Duration: %ld\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
 
     printf("Number of customers served: %d\n", counter);
-    printf("Number of seats booked: %d\n", N_SEATS_LEFT+N_SEATS);
-    printf("Number of transactions: %d\n", transactions);
+    printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
+    printf("Number of seats left: %d\n", N_SEATS_LEFT);
+    printf("Transactions: %d\n", transactions);
     printf("Profits: %d\n", profit);
 
     printf("\nExiting..");
@@ -111,14 +113,21 @@ void *bookSeats(void *x) {
     if (N_CHOICE <= N_SEATS_LEFT) {
 
         sleep(random1(T_SEAT_LOW, T_SEAT_HIGH));
+
+        rc = pthread_mutex_lock(&lock);
         N_SEATS_LEFT -= N_CHOICE;
+        rc = pthread_mutex_unlock(&lock);
 
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
+            rc = pthread_mutex_lock(&lock);
             profit += N_CHOICE * C_SEAT;
             ++transactions;
+            rc = pthread_mutex_unlock(&lock);
             printf("Customer %d seats booked\n", id);
         } else {
+            rc = pthread_mutex_lock(&lock);
             N_SEATS_LEFT += N_CHOICE;
+            rc = pthread_mutex_unlock(&lock);
             printf("Card of Customer %d failed\n", id);
         }
 
