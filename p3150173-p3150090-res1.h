@@ -9,8 +9,8 @@
 
 #include <time.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <pthread.h>
 
 #define N_SEATS 250
@@ -21,4 +21,3 @@
 #define T_SEAT_HIGH 10
 #define P_CARD_SUCCESS 0.9
 #define C_SEAT 20
-#define SEED 10

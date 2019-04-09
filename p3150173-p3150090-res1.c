@@ -12,8 +12,12 @@ int cust_id=0;
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
 
+int random_number;
+
 // Calculate time taken by a request
 struct timespec requestStart, requestEnd;
+struct tm start;
+struct tm end;
 
 void *bookSeats(void *);
 int i_random(int, int);
@@ -35,17 +39,17 @@ int main(int argc, char* argv[]){
     // Converting string type to integer type
     // using function atoi
     int customers = atoi(argv[1]);
-    int seed = atoi(argv[2]);
+    unsigned int seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive
     if (customers <= 0 || seed <= 0){
-        printf("Please enter only positive values in arguments!");
+        printf("Please enter only positive values in arguments!\n");
         exit(1);
     }
 
-    srand(seed);
-
     printf("Customers to be served: %d\n\n", customers);
+
+    random_number = rand_r(&seed);
 
     int N_CUST = customers;
     int flag =1;
@@ -68,7 +72,7 @@ int main(int argc, char* argv[]){
             printf("Creating Thread %d\n", cust_id);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
                 showClock();
-                printf("Thread Creation Error");
+                printf("Thread Creation Error\n");
                 exit(1);
             } else {
                 --customers;
@@ -82,14 +86,14 @@ int main(int argc, char* argv[]){
     sleep(5);
 
     stopTimer();
-
+    printf("Start [%d:%d:%d]\nEnd   [%d:%d:%d]\n\n", start.tm_hour, start.tm_min, start.tm_sec, end.tm_hour, end.tm_min, end.tm_sec);
     printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
-    printf("Profits: %d \u20AC", profit);
-    printf("\nExiting..");
+    printf("Profits: %d \u20AC\n", profit);
+    printf("\nExiting..\n");
 }
 
 void *bookSeats(void *x) {
@@ -153,21 +157,25 @@ void *bookSeats(void *x) {
 }
 
 int i_random(int min, int max){
-    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
+    return min + random_number / (RAND_MAX / (max - min + 1) + 1);
 }
 
 double f_random(double min, double max){
-    double f = (double)rand() / RAND_MAX;
+    double f = (double) random_number / RAND_MAX;
     return min + f * (max - min);
 }
 
 void startTimer(){
+    time_t t = time(NULL);
+    start = *localtime(&t);
     showClock();
     printf("Starting Timer\n\n");
     clock_gettime(CLOCK_REALTIME, &requestStart);
 }
 
 void stopTimer(){
+    time_t t = time(NULL);
+    end = *localtime(&t);
     printf("\n");
     showClock();
     printf("Stopping Timer\n\n");
