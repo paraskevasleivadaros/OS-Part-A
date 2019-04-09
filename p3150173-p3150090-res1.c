@@ -76,19 +76,17 @@ int main(int argc, char* argv[]){
         }
     }
 
-    stopTimer();
-
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
 
-    printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
+    stopTimer();
 
+    printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
     printf("Profits: %d \u20AC", profit);
-
     printf("\nExiting..");
 }
 
