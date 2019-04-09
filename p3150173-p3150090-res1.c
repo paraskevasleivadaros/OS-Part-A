@@ -9,6 +9,7 @@ int i_random(int, int);
 double f_random(double, double);
 void startTimer();
 void stopTimer();
+void showClock();
 
 int profit = 0;
 int transactions = 0;
@@ -63,9 +64,10 @@ int main(int argc, char* argv[]){
                 flag = 0;
                 break;
             }
-
+            showClock();
             printf("Creating Thread %d\n", cust_id);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
+                showClock();
                 printf("Thread Creation Error");
                 exit(1);
             } else {
@@ -98,15 +100,17 @@ void *bookSeats(void *x) {
 
     int id = (int) (int *) x;
     int rc;
+    showClock();
     printf("Telephonist %d in line.\n", (id%8+1));
 
     rc = pthread_mutex_lock(&lock);
 
     while (N_TEL_LEFT == 0) {
+        showClock();
         printf("Customer %d couldn't find telephonist available. Blocked...\n", id);
         rc = pthread_cond_wait(&cond, &lock);
     }
-
+    showClock();
     printf("Customer %d being served.\n", id);
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
@@ -125,20 +129,24 @@ void *bookSeats(void *x) {
             rc = pthread_mutex_lock(&lock);
             profit += N_CHOICE * C_SEAT;
             ++transactions;
+            showClock();
             printf("Customer %d seats booked\n", id);
             rc = pthread_mutex_unlock(&lock);
         } else {
             rc = pthread_mutex_lock(&lock);
             N_SEATS_LEFT += N_CHOICE;
+            showClock();
             printf("Card of Customer %d failed\n", id);
             rc = pthread_mutex_unlock(&lock);
         }
 
     } else {
+        showClock();
         printf("Not enough seats left to book.\n");
     }
 
     rc = pthread_mutex_lock(&lock);
+    showClock();
     printf("Customer %d served successfully!\n", id);
     N_TEL_LEFT++;
     rc = pthread_cond_signal(&cond);
@@ -164,4 +172,10 @@ void startTimer(){
 void stopTimer(){
     printf("\nStopping Clock\n\n");
     clock_gettime(CLOCK_REALTIME, &requestEnd);
+}
+
+void showClock(){
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    printf("%d:%d:%d ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
