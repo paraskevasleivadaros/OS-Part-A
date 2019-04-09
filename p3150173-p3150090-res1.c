@@ -47,10 +47,10 @@ int main(int argc, char* argv[]){
 
     printf("Customers to be served: %d\n\n", customers);
 
-    startTimer();
-
     int N_CUST = customers;
     int flag =1;
+
+    startTimer();
 
     while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
@@ -80,10 +80,10 @@ int main(int argc, char* argv[]){
         }
     }
 
+    stopTimer();
+
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
-
-    stopTimer();
 
     printf("Duration: %ld\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
 
@@ -100,10 +100,11 @@ void *bookSeats(void *x) {
 
     int id = (int) (int *) x;
     int rc;
-    showClock();
-    printf("Telephonist %d in line.\n", (id%8+1));
 
     rc = pthread_mutex_lock(&lock);
+
+    showClock();
+    printf("Telephonist %d in line.\n", (id%8+1));
 
     while (N_TEL_LEFT == 0) {
         showClock();
@@ -165,17 +166,20 @@ double f_random(double min, double max){
 }
 
 void startTimer(){
-    printf("Starting Clock\n\n");
+    showClock();
+    printf("Starting Timer\n\n");
     clock_gettime(CLOCK_REALTIME, &requestStart);
 }
 
 void stopTimer(){
-    printf("\nStopping Clock\n\n");
+    printf("\n");
+    showClock();
+    printf("Stopping Timer\n\n");
     clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
 
 void showClock(){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    printf("%d:%d:%d ", tm.tm_hour, tm.tm_min, tm.tm_sec);
+    printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
