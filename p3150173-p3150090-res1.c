@@ -26,7 +26,7 @@ void startTimer();
 void stopTimer();
 void showClock();
 
-pthread_mutex_t lock;
+pthread_mutex_t lock= PTHREAD_MUTEX_INITIALIZER;;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
@@ -68,9 +68,7 @@ int main(int argc, char* argv[]){
                 flag = 0;
                 break;
             }
-            showClock();
-            printf("Creating Thread %d\n", cust_id);
-            if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
+            if ((rc = pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
                 showClock();
                 printf("Thread Creation Error\n");
                 exit(1);
@@ -86,7 +84,8 @@ int main(int argc, char* argv[]){
     sleep(5);
 
     stopTimer();
-    printf("Start [%d:%d:%d]\nEnd   [%d:%d:%d]\n\n", start.tm_hour, start.tm_min, start.tm_sec, end.tm_hour, end.tm_min, end.tm_sec);
+    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
     printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
@@ -149,7 +148,7 @@ void *bookSeats(void *x) {
     rc = pthread_mutex_lock(&lock);
     showClock();
     printf("Customer %d served successfully!\n", id);
-    N_TEL_LEFT++;
+    ++N_TEL_LEFT;
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
     pthread_exit(NULL); //return
