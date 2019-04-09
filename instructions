@@ -1,4 +1,11 @@
-How to compile & run the program:
+How to compile & run the program on Windows:
 
 gcc p3150173-p3150090-res1.c -o main -lpthread
 main 68 10 (for example 68 customers and seed = 10)
+
+How to compile & run the program on Ubuntu:
+
+gcc p3150173-p3150090-res1.c -o main -lpthread
+./main 68 10 (for example 68 customers and seed = 10)
+
+

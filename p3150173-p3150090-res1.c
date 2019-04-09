@@ -5,7 +5,7 @@
 #include "p3150173-p3150090-res1.h"
 
 void *bookSeats(void *);
-int random(int, int);
+int random1(int, int);
 double f_random(double, double);
 void startTimer();
 void stopTimer();
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
 
     stopTimer();
 
-    printf("Duration: %lld\n\n", (requestStart.tv_sec - requestEnd.tv_sec));
+    printf("Duration: %ld\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
 
     printf("Number of customers served: %d\n", counter);
     printf("Number of seats booked: %d\n", N_SEATS_LEFT+N_SEATS);
@@ -106,11 +106,11 @@ void *bookSeats(void *x) {
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
-    int N_CHOICE = random(N_SEAT_LOW, N_SEAT_HIGH);
+    int N_CHOICE = random1(N_SEAT_LOW, N_SEAT_HIGH);
 
     if (N_CHOICE <= N_SEATS_LEFT) {
 
-        sleep(random(T_SEAT_LOW, T_SEAT_HIGH));
+        sleep(random1(T_SEAT_LOW, T_SEAT_HIGH));
         N_SEATS_LEFT -= N_CHOICE;
 
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
@@ -119,7 +119,7 @@ void *bookSeats(void *x) {
             printf("Customer %d seats booked\n", id);
         } else {
             N_SEATS_LEFT += N_CHOICE;
-            printf("Card of Customer %d failed :(\n", id);
+            printf("Card of Customer %d failed\n", id);
         }
 
     } else {
@@ -135,7 +135,7 @@ void *bookSeats(void *x) {
     return NULL;
 }
 
-int random(int min, int max){
+int random1(int min, int max){
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
@@ -146,10 +146,10 @@ double f_random(double min, double max){
 
 void startTimer(){
     printf("Starting Clock\n\n");
-    // clock_gettime(CLOCK_REALTIME, &requestStart);
+    clock_gettime(CLOCK_REALTIME, &requestStart);
 }
 
 void stopTimer(){
     printf("\nStopping Clock\n\n");
-    // clock_gettime(CLOCK_REALTIME, &requestEnd);
+    clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
