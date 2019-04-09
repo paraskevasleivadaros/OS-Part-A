@@ -79,6 +79,8 @@ int main(int argc, char* argv[]){
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&cond);
 
+    sleep(5);
+
     stopTimer();
 
     printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
