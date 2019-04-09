@@ -13,6 +13,8 @@ void stopTimer();
 int profit = 0;
 int transactions = 0;
 
+int cust_id=0;
+
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
 
@@ -47,22 +49,21 @@ int main(int argc, char* argv[]){
     startTimer();
 
     int N_CUST = customers;
-    int counter=0;
     int flag =1;
 
     while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
 
             id[i] = i + 1;
-            ++counter;
+            ++cust_id;
 
-            if (counter>N_CUST) {
-                --counter;
+            if (cust_id>N_CUST) {
+                --cust_id;
                 flag = 0;
                 break;
             }
 
-            printf("Creating Thread %d\n", counter);
+            printf("Creating Thread %d\n", cust_id);
             if ((rc= pthread_create(&threads[i], NULL, bookSeats, (void *) id[i]))) {
                 printf("Thread Creation Error");
                 exit(1);
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]){
 
     printf("Duration: %ld\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
 
-    printf("Number of customers served: %d\n", counter);
+    printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
@@ -97,6 +98,7 @@ void *bookSeats(void *x) {
     int id = (int) (int *) x;
     int rc;
     printf("Telephonist %d in line.\n", id);
+
     rc = pthread_mutex_lock(&lock);
 
     while (N_TEL_LEFT == 0) {
@@ -122,13 +124,13 @@ void *bookSeats(void *x) {
             rc = pthread_mutex_lock(&lock);
             profit += N_CHOICE * C_SEAT;
             ++transactions;
-            rc = pthread_mutex_unlock(&lock);
             printf("Customer %d seats booked\n", id);
+            rc = pthread_mutex_unlock(&lock);
         } else {
             rc = pthread_mutex_lock(&lock);
             N_SEATS_LEFT += N_CHOICE;
-            rc = pthread_mutex_unlock(&lock);
             printf("Card of Customer %d failed\n", id);
+            rc = pthread_mutex_unlock(&lock);
         }
 
     } else {
