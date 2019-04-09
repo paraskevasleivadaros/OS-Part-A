@@ -4,13 +4,6 @@
 
 #include "p3150173-p3150090-res1.h"
 
-void *bookSeats(void *);
-int i_random(int, int);
-double f_random(double, double);
-void startTimer();
-void stopTimer();
-void showClock();
-
 int profit = 0;
 int transactions = 0;
 
@@ -21,6 +14,13 @@ int N_SEATS_LEFT = N_SEATS;
 
 // Calculate time taken by a request
 struct timespec requestStart, requestEnd;
+
+void *bookSeats(void *);
+int i_random(int, int);
+double f_random(double, double);
+void startTimer();
+void stopTimer();
+void showClock();
 
 pthread_mutex_t lock;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -104,7 +104,7 @@ void *bookSeats(void *x) {
 
     while (N_TEL_LEFT == 0) {
         showClock();
-        printf("Customer %d couldn't find telephonist available. Blocked...\n", id);
+        printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
         rc = pthread_cond_wait(&cond, &lock);
     }
     showClock();
