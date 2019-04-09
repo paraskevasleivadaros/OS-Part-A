@@ -86,7 +86,7 @@ int main(int argc, char* argv[]){
     stopTimer();
     printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
     printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
-    printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
+    printf("Duration: %lld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
