@@ -27,7 +27,9 @@ void stopTimer();
 void showClock();
 
 pthread_mutex_t lock= PTHREAD_MUTEX_INITIALIZER;;
+pthread_mutex_t lock1= PTHREAD_MUTEX_INITIALIZER;;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
 
@@ -35,6 +37,7 @@ int main(int argc, char* argv[]){
     pthread_t threads[N_TEL];
     int id[N_TEL];
     pthread_mutex_init(&lock, NULL);
+    pthread_mutex_init(&lock1, NULL);
 
     // Converting string type to integer type
     // using function atoi
@@ -78,14 +81,21 @@ int main(int argc, char* argv[]){
     }
 
     pthread_mutex_destroy(&lock);
+    pthread_mutex_destroy(&lock1);
     pthread_cond_destroy(&cond);
+    pthread_cond_destroy(&cond1);
 
     sleep(5);
 
     stopTimer();
     printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
     printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
-    printf("Duration: %ld seconds\n\n", (requestEnd.tv_sec-requestStart.tv_sec));
+    long int totalSeconds = requestEnd.tv_sec-requestStart.tv_sec;
+    long int minutes = totalSeconds/60;
+    long int seconds = totalSeconds%60;
+    double avTimePerCust = ((double)(totalSeconds)/N_CUST);
+    printf("Duration: %ld minutes %ld seconds (%ld s)\n\n", minutes, seconds, totalSeconds);
+    printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
@@ -98,6 +108,7 @@ void *bookSeats(void *x) {
 
     int id = (int) (int *) x;
     int rc;
+    int rc1;
 
     rc = pthread_mutex_lock(&lock);
 
@@ -108,6 +119,7 @@ void *bookSeats(void *x) {
         showClock();
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
         rc = pthread_cond_wait(&cond, &lock);
+        rc = pthread_cond_wait(&cond1, &lock1);
     }
 
     showClock();
@@ -115,34 +127,29 @@ void *bookSeats(void *x) {
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
+    rc = pthread_mutex_lock(&lock1);
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
-    if (N_CHOICE <= N_SEATS_LEFT || N_SEATS_LEFT==0) {
+    if (N_CHOICE <= N_SEATS_LEFT || N_SEATS_LEFT>0) {
 
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 
-        rc = pthread_mutex_lock(&lock);
-        N_SEATS_LEFT -= N_CHOICE;
-        rc = pthread_mutex_unlock(&lock);
-
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
-            rc = pthread_mutex_lock(&lock);
+            N_SEATS_LEFT -= N_CHOICE;
             profit += N_CHOICE * C_SEAT;
             ++transactions;
             showClock();
             printf("Customer %d seats booked\n", id);
-            rc = pthread_mutex_unlock(&lock);
         } else {
-            rc = pthread_mutex_lock(&lock);
-            N_SEATS_LEFT += N_CHOICE;
             showClock();
             printf("Card of Customer %d failed\n", id);
-            rc = pthread_mutex_unlock(&lock);
         }
     } else {
         showClock();
         printf("Not enough seats left to book.\n");
     }
+    rc = pthread_cond_signal(&cond1);
+    rc = pthread_mutex_unlock(&lock1);
 
     rc = pthread_mutex_lock(&lock);
     showClock();
@@ -164,19 +171,19 @@ double f_random(double min, double max){
 }
 
 void startTimer(){
-    time_t t = time(NULL);
-    start = *localtime(&t);
     showClock();
     printf("Starting Timer\n\n");
+    time_t t = time(NULL);
+    start = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestStart);
 }
 
 void stopTimer(){
-    time_t t = time(NULL);
-    end = *localtime(&t);
     printf("\n");
     showClock();
     printf("Stopping Timer\n\n");
+    time_t t = time(NULL);
+    end = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
 
