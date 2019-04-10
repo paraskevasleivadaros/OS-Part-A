@@ -94,7 +94,7 @@ int main(int argc, char* argv[]){
     long int minutes = totalSeconds/60;
     long int seconds = totalSeconds%60;
     double avTimePerCust = ((double)(totalSeconds)/N_CUST);
-    printf("Duration: %ld minutes %ld seconds (%ld s)\n\n", minutes, seconds, totalSeconds);
+    printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
     printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
     printf("Number of customers served: %d\n", cust_id);
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
