@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
 
     // Converting string type to integer type
     // using function atoi
-    int customers = atoi(argv[1]);
+    unsigned int customers = atoi(argv[1]);
     unsigned int seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive
@@ -58,7 +58,6 @@ int main(int argc, char* argv[]){
 
     while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
-
 
             ++cust_id;
             id[i] = cust_id;
@@ -140,7 +139,6 @@ void *bookSeats(void *x) {
             printf("Card of Customer %d failed\n", id);
             rc = pthread_mutex_unlock(&lock);
         }
-
     } else {
         showClock();
         printf("Not enough seats left to book.\n");
