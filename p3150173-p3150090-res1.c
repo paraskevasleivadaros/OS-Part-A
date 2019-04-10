@@ -110,6 +110,7 @@ void *bookSeats(void *x) {
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
         rc = pthread_cond_wait(&cond, &lock);
     }
+
     showClock();
     printf("Customer %d being served..\n", id);
     --N_TEL_LEFT;
@@ -117,7 +118,7 @@ void *bookSeats(void *x) {
 
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
-    if (N_CHOICE <= N_SEATS_LEFT) {
+    if (N_CHOICE <= N_SEATS_LEFT || N_SEATS_LEFT==0) {
 
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 
