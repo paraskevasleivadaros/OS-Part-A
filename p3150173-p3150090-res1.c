@@ -91,7 +91,7 @@ int main(int argc, char* argv[]){
     printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
-    printf("Profits: %d \u20AC\n", profit);
+    printf("Profits: %d\u20AC\n", profit);
     printf("\nExiting..\n");
 }
 
