@@ -135,10 +135,7 @@ void *customerService(void *x) {
 #endif
 
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
-            // bookSeats(N_CHOICE);
-            N_SEATS_LEFT -= N_CHOICE;
-            profit += N_CHOICE * C_SEAT;
-            ++transactions;
+            bookSeats(N_CHOICE);
 #if DEBUG
             showClock();
             printf("Customer %d seats booked\n", id);
