@@ -129,7 +129,6 @@ void *customerService(void *x) {
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
     if (N_CHOICE <= N_SEATS_LEFT) {
-
 #if DEBUG
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 #endif
