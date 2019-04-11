@@ -18,6 +18,8 @@ int N_SEATS_LEFT = N_SEATS;
 int *N_SEATS_LEFT_ptr = &N_SEATS_LEFT;
 int random_number;
 
+int *seatsArray;
+
 // Calculate time taken by a request
 struct timespec requestStart, requestEnd;
 struct tm start;
@@ -28,9 +30,10 @@ int i_random(int, int);
 double f_random(double, double);
 void startTimer();
 void stopTimer();
-void showClock();
 
-void bookSeats(int);
+void Clock();
+
+void bookSeats(int, int);
 void printInfo();
 
 pthread_mutex_t lock= PTHREAD_MUTEX_INITIALIZER;;
@@ -60,6 +63,8 @@ int main(int argc, char* argv[]){
     printf("Customers to be served: %d\n\n", customers);
 
     N_CUST = customers;
+    seatsArray = malloc(N_CUST * sizeof(int));
+
     int flag =1;
 
     startTimer();
@@ -72,12 +77,11 @@ int main(int argc, char* argv[]){
             id[i] = cust_id;
 
             if (cust_id>N_CUST) {
-                --cust_id;
                 flag = 0;
                 break;
             }
             if ((rc = pthread_create(&threads[i], NULL, customerService, (void *) id[i]))) {
-                showClock();
+                Clock();
                 printf("Thread Creation Error\n");
                 exit(1);
             } else {
@@ -91,9 +95,7 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond1);
 
-    for (int i = 0; i < N_TEL; i++) {
-        pthread_join(threads[i], NULL);
-    }
+    sleep(10);
 
     stopTimer();
 
@@ -107,21 +109,21 @@ void *customerService(void *x) {
     int rc1;
 
     rc = pthread_mutex_lock(&lock);
-#if DEBUG
-    showClock();
+#if !DEBUG
+    Clock();
     printf("Telephonist %d in line.\n", (id % 8 + 1));
 #endif
     while (N_TEL_LEFT == 0) {
-#if DEBUG
-        showClock();
+#if !DEBUG
+        Clock();
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
 #endif
         rc = pthread_cond_wait(&cond, &lock);
         rc = pthread_cond_wait(&cond1, &lock1);
     }
 
-#if DEBUG
-    showClock();
+#if !DEBUG
+    Clock();
     printf("Customer %d being served..\n", id);
 #endif
     --N_TEL_LEFT;
@@ -131,25 +133,25 @@ void *customerService(void *x) {
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
     if (N_CHOICE <= N_SEATS_LEFT) {
-#if DEBUG
+#if !DEBUG
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 #endif
 
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
-            bookSeats(N_CHOICE);
-#if DEBUG
-            showClock();
+            bookSeats(N_CHOICE, id);
+#if !DEBUG
+            Clock();
             printf("Customer %d seats booked\n", id);
 #endif
         } else {
-#if DEBUG
-            showClock();
+#if !DEBUG
+            Clock();
             printf("Card of Customer %d failed\n", id);
 #endif
         }
     } else {
-#if DEBUG
-        showClock();
+#if !DEBUG
+        Clock();
         printf("Not enough seats left to book.\n");
 #endif
     }
@@ -157,8 +159,8 @@ void *customerService(void *x) {
     rc = pthread_mutex_unlock(&lock1);
 
     rc = pthread_mutex_lock(&lock);
-#if DEBUG
-    showClock();
+#if !DEBUG
+    Clock();
     printf("Customer %d served successfully!\n", id);
 #endif
     ++N_TEL_LEFT;
@@ -177,7 +179,7 @@ double f_random(double min, double max){
 }
 
 void startTimer(){
-    showClock();
+    Clock();
     printf("Starting Timer\n\n");
     time_t t = time(NULL);
     start = *localtime(&t);
@@ -186,23 +188,30 @@ void startTimer(){
 
 void stopTimer(){
     printf("\n");
-    showClock();
+    Clock();
     printf("Stopping Timer\n\n");
     time_t t = time(NULL);
     end = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestEnd);
 }
 
-void showClock(){
+void Clock() {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-void bookSeats(int choice) {
+void bookSeats(int choice, int id) {
     *N_SEATS_LEFT_ptr -= choice;
     *profit_ptr += (choice * C_SEAT);
     ++(*transactions_ptr);
+    seatsArray[id] = choice;
+}
+
+void printArray() {
+    for (int i = 0; i < N_CUST; i++) {
+        printf("%d ", seatsArray[i]);
+    }
 }
 
 void printInfo() {
@@ -214,10 +223,13 @@ void printInfo() {
     double avTimePerCust = ((double) (totalSeconds) / N_CUST);
     printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
     printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
-    printf("Number of customers served: %d\n", cust_id);
+    printf("Number of customers served: %d\n", N_CUST);
     printf("Number of seats booked: %d\n", N_SEATS - N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);
-    printf("Profits: %d\u20AC\n", profit);
+    printf("Profit: %d\u20AC\n", profit);
+#if DEBUG
+    printArray();
+#endif
     printf("\nExiting..\n");
 }

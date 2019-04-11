@@ -10,6 +10,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -21,4 +22,4 @@
 #define T_SEAT_HIGH 10
 #define P_CARD_SUCCESS 0.9
 #define C_SEAT 20
-#define DEBUG 1
+#define DEBUG 0
