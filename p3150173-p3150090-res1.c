@@ -11,6 +11,8 @@ int *transactions_ptr = &transactions;
 int cust_id=0;
 int N_CUST;
 
+_Thread_local unsigned int seed;
+
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
 int *N_SEATS_LEFT_ptr = &N_SEATS_LEFT;
@@ -47,7 +49,7 @@ int main(int argc, char* argv[]){
     // Converting string type to integer type
     // using function atoi
     unsigned int customers = atoi(argv[1]);
-    unsigned int seed = atoi(argv[2]);
+    seed = atoi(argv[2]);
 
     // Checking if all provided numbers are positive
     if (customers <= 0 || seed <= 0){
@@ -57,8 +59,6 @@ int main(int argc, char* argv[]){
 
     printf("Customers to be served: %d\n\n", customers);
 
-    random_number = rand_r(&seed);
-
     N_CUST = customers;
     int flag =1;
 
@@ -67,6 +67,7 @@ int main(int argc, char* argv[]){
     while(customers>0 && flag){
         for (int i = 0; i < N_TEL; i++) {
 
+            random_number = rand_r(&seed);
             ++cust_id;
             id[i] = cust_id;
 
@@ -104,47 +105,64 @@ void *customerService(void *x) {
     int rc1;
 
     rc = pthread_mutex_lock(&lock);
-
+#if DEBUG
     showClock();
     printf("Telephonist %d in line.\n", (id % 8 + 1));
-
+#endif
     while (N_TEL_LEFT == 0) {
+#if DEBUG
         showClock();
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
+#endif
         rc = pthread_cond_wait(&cond, &lock);
         rc = pthread_cond_wait(&cond1, &lock1);
     }
 
+#if DEBUG
     showClock();
     printf("Customer %d being served..\n", id);
+#endif
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
     rc = pthread_mutex_lock(&lock1);
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
-    if (N_CHOICE <= N_SEATS_LEFT || N_SEATS_LEFT>0) {
+    if (N_CHOICE <= N_SEATS_LEFT) {
 
+#if DEBUG
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
+#endif
 
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
-            bookSeats(N_CHOICE);
+            // bookSeats(N_CHOICE);
+            N_SEATS_LEFT -= N_CHOICE;
+            profit += N_CHOICE * C_SEAT;
+            ++transactions;
+#if DEBUG
             showClock();
             printf("Customer %d seats booked\n", id);
+#endif
         } else {
+#if DEBUG
             showClock();
             printf("Card of Customer %d failed\n", id);
+#endif
         }
     } else {
+#if DEBUG
         showClock();
         printf("Not enough seats left to book.\n");
+#endif
     }
     rc = pthread_cond_signal(&cond1);
     rc = pthread_mutex_unlock(&lock1);
 
     rc = pthread_mutex_lock(&lock);
+#if DEBUG
     showClock();
     printf("Customer %d served successfully!\n", id);
+#endif
     ++N_TEL_LEFT;
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
@@ -152,7 +170,7 @@ void *customerService(void *x) {
 }
 
 int i_random(int min, int max){
-    return min + random_number / (RAND_MAX / (max - min + 1) + 1);
+    return (random_number % (max - min + 1)) + min;
 }
 
 double f_random(double min, double max){
