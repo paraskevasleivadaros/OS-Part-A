@@ -199,7 +199,7 @@ void showClock(){
 
 void bookSeats(int choice) {
     *N_SEATS_LEFT_ptr -= choice;
-    *profit_ptr += choice * C_SEAT;
+    *profit_ptr += (choice * C_SEAT);
     ++(*transactions_ptr);
 }
 
