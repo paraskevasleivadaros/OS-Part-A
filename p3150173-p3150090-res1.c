@@ -98,7 +98,7 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond1);
 
-    sleep(5);
+    sleep(6);
 
     stopTimer();
 
