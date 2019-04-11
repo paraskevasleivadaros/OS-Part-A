@@ -91,7 +91,9 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond1);
 
-    sleep(5);
+    for (int i = 0; i < N_TEL; i++) {
+        pthread_join(threads[i], NULL);
+    }
 
     stopTimer();
 
