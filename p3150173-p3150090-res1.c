@@ -39,8 +39,8 @@ void Clock();
 void bookSeats(int, int);
 void printInfo();
 
-pthread_mutex_t lock= PTHREAD_MUTEX_INITIALIZER;;
-pthread_mutex_t lock1= PTHREAD_MUTEX_INITIALIZER;;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lock1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond1);
 
-    sleep(6);
+    sleep(10);
 
     stopTimer();
 
