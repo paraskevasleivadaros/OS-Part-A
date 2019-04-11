@@ -8,15 +8,18 @@ int profit = 0;
 int *profit_ptr = &profit;
 int transactions = 0;
 int *transactions_ptr = &transactions;
+
 int cust_id=0;
 int N_CUST;
+int served = 0;
+int *served_ptr = &served;
 
 _Thread_local unsigned int seed;
+int random_number;
 
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
 int *N_SEATS_LEFT_ptr = &N_SEATS_LEFT;
-int random_number;
 
 int *seatsArray;
 
@@ -160,6 +163,7 @@ void *customerService(void *x) {
 #if !DEBUG
     Clock();
     printf("Customer %d served successfully!\n", id);
+    ++(*served_ptr);
 #endif
     ++N_TEL_LEFT;
     rc = pthread_cond_signal(&cond);
@@ -221,7 +225,7 @@ void printInfo() {
     double avTimePerCust = ((double) (totalSeconds) / N_CUST);
     printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
     printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
-    printf("Number of customers served: %d\n", N_CUST);
+    printf("Number of customers served: %d\n", served);
     printf("Number of seats booked: %d\n", N_SEATS - N_SEATS_LEFT);
     printf("Number of seats left: %d\n", N_SEATS_LEFT);
     printf("Transactions: %d\n", transactions);

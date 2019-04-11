@@ -28,7 +28,7 @@ pthreads API, τα mutexes είναι κλειδαριές (duh)
 Πίνακας N_CUST από pointers που δείχνουν σε arrays που περιέχουν τις θέσεις που έχει κλείσει ο κάθε πελάτης
 
 ## HOW TO RUN
-Ανοίγεις το terminal και με την εντολή cd πηγαίνεις στο path του projects
+Ανοίγεις το terminal και με την εντολή cd πηγαίνεις στο path του project
 bash run.sh 
 
 ## TO-DO
@@ -37,4 +37,6 @@ bash run.sh
 
 ## Χρήσιμοι Σύνδεσμοι
 
-[Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία](https://eclass.aueb.gr/modules/wiki/page.php?course=INF168&wikiId=3941&action=show "Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία")
+[Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία](https://eclass.aueb.gr/modules/wiki/page.php?course=INF168&wikiId=3941&action=show "Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία") <br>
+[How To Use Printf In Multiple Threads](https://stackoverflow.com/questions/23586682/how-to-use-printf-in-multiple-threads "How To Use Printf In Multiple Threads")
+
