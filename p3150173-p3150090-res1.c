@@ -95,8 +95,6 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond1);
 
-    sleep(10);
-
     stopTimer();
 
     printInfo();
@@ -119,7 +117,7 @@ void *customerService(void *x) {
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
 #endif
         rc = pthread_cond_wait(&cond, &lock);
-        rc = pthread_cond_wait(&cond1, &lock1);
+        rc1 = pthread_cond_wait(&cond1, &lock1);
     }
 
 #if !DEBUG
@@ -129,7 +127,7 @@ void *customerService(void *x) {
     --N_TEL_LEFT;
     rc = pthread_mutex_unlock(&lock);
 
-    rc = pthread_mutex_lock(&lock1);
+    rc1 = pthread_mutex_lock(&lock1);
     int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
     if (N_CHOICE <= N_SEATS_LEFT) {
@@ -155,8 +153,8 @@ void *customerService(void *x) {
         printf("Not enough seats left to book.\n");
 #endif
     }
-    rc = pthread_cond_signal(&cond1);
-    rc = pthread_mutex_unlock(&lock1);
+    rc1 = pthread_cond_signal(&cond1);
+    rc1 = pthread_mutex_unlock(&lock1);
 
     rc = pthread_mutex_lock(&lock);
 #if !DEBUG
