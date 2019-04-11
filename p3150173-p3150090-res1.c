@@ -6,12 +6,10 @@
 
 int profit = 0;
 int transactions = 0;
-
 int cust_id=0;
 
 int N_TEL_LEFT = N_TEL;
 int N_SEATS_LEFT = N_SEATS;
-
 int random_number;
 
 // Calculate time taken by a request
@@ -25,6 +23,8 @@ double f_random(double, double);
 void startTimer();
 void stopTimer();
 void showClock();
+
+void printInfo();
 
 pthread_mutex_t lock= PTHREAD_MUTEX_INITIALIZER;;
 pthread_mutex_t lock1= PTHREAD_MUTEX_INITIALIZER;;
@@ -88,20 +88,8 @@ int main(int argc, char* argv[]){
     sleep(5);
 
     stopTimer();
-    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
-    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
-    long int totalSeconds = requestEnd.tv_sec-requestStart.tv_sec;
-    long int minutes = totalSeconds/60;
-    long int seconds = totalSeconds%60;
-    double avTimePerCust = ((double)(totalSeconds)/N_CUST);
-    printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
-    printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
-    printf("Number of customers served: %d\n", cust_id);
-    printf("Number of seats booked: %d\n", N_SEATS-N_SEATS_LEFT);
-    printf("Number of seats left: %d\n", N_SEATS_LEFT);
-    printf("Transactions: %d\n", transactions);
-    printf("Profits: %d\u20AC\n", profit);
-    printf("\nExiting..\n");
+
+    printInfo();
 }
 
 void *bookSeats(void *x) {
@@ -190,4 +178,21 @@ void showClock(){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
+
+void printInfo() {
+    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
+    long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
+    long int minutes = totalSeconds / 60;
+    long int seconds = totalSeconds % 60;
+    double avTimePerCust = ((double) (totalSeconds) / N_CUST);
+    printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
+    printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
+    printf("Number of customers served: %d\n", cust_id);
+    printf("Number of seats booked: %d\n", N_SEATS - N_SEATS_LEFT);
+    printf("Number of seats left: %d\n", N_SEATS_LEFT);
+    printf("Transactions: %d\n", transactions);
+    printf("Profits: %d\u20AC\n", profit);
+    printf("\nExiting..\n");
 }
