@@ -158,7 +158,6 @@ void *bookSeats(void *x) {
     rc = pthread_cond_signal(&cond);
     rc = pthread_mutex_unlock(&lock);
     pthread_exit(NULL); //return
-    return NULL;
 }
 
 int i_random(int min, int max){
