@@ -14,11 +14,12 @@ unsigned int *served_ptr = &served;
 
 _Thread_local unsigned int seed;
 int random_number;
+unsigned int choice;
 
 unsigned int customers;
 unsigned int telephonist = N_TEL;
-unsigned int N_SEATS_LEFT = N_SEATS;
-unsigned int *N_SEATS_LEFT_ptr = &N_SEATS_LEFT;
+unsigned int remainingSeats = N_SEATS;
+unsigned int *remainingSeats_ptr = &remainingSeats;
 
 int *seatsArray;
 
@@ -36,11 +37,16 @@ void startTimer();
 void stopTimer();
 void Clock();
 
-void bookSeats(int, int);
 void printInfo();
 
 pthread_mutex_t lock;
-pthread_mutex_t lock1;
+pthread_mutex_t bank;
+pthread_mutex_t transaction;
+pthread_mutex_t avgWaitTime;
+pthread_mutex_t avgServingTime;
+pthread_mutex_t array;
+pthread_mutex_t print;
+pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
@@ -69,7 +75,13 @@ int main(int argc, char* argv[]){
     int id[customers];
 
     pthread_mutex_init(&lock, NULL);
-    pthread_mutex_init(&lock1, NULL);
+    pthread_mutex_init(&bank, NULL);
+    pthread_mutex_init(&transaction, NULL);
+    pthread_mutex_init(&avgWaitTime, NULL);
+    pthread_mutex_init(&avgServingTime, NULL);
+    pthread_mutex_init(&array, NULL);
+    pthread_mutex_init(&print, NULL);
+    pthread_mutex_init(&decision, NULL);
 
     seatsArray = malloc(customers * sizeof(int));
 
@@ -89,7 +101,13 @@ int main(int argc, char* argv[]){
     }
 
     pthread_mutex_destroy(&lock);
-    pthread_mutex_destroy(&lock1);
+    pthread_mutex_destroy(&bank);
+    pthread_mutex_destroy(&transaction);
+    pthread_mutex_destroy(&avgWaitTime);
+    pthread_mutex_destroy(&avgServingTime);
+    pthread_mutex_destroy(&array);
+    pthread_mutex_destroy(&print);
+    pthread_mutex_destroy(&decision);
     pthread_cond_destroy(&cond);
 
     stopTimer();
@@ -106,63 +124,83 @@ void *customer(void *x) {
     int id = (int) (int *) x;
     int rc;
 
+    rc = pthread_mutex_lock(&print);
     Clock();
     printf("Customer %d calling..\n", (id));
+    rc = pthread_mutex_unlock(&print);
 
     rc = pthread_mutex_lock(&lock);
 
     while (telephonist == 0) {
 
+        rc = pthread_mutex_lock(&print);
         Clock();
         printf("Customer %d couldn't find telephonist available. Blocked..\n", id);
-
+        rc = pthread_mutex_unlock(&print);
         rc = pthread_cond_wait(&cond, &lock);
     }
 
+    rc = pthread_mutex_lock(&print);
     Clock();
     printf("Customer %d being served..\n", id);
+    rc = pthread_mutex_unlock(&print);
 
     --telephonist;
     rc = pthread_mutex_unlock(&lock);
 
-    // rc = pthread_mutex_lock(&lock1);
-    int N_CHOICE = i_random(N_SEAT_LOW, N_SEAT_HIGH);
+    rc = pthread_mutex_lock(&decision);
+    choice = i_random(N_SEAT_LOW, N_SEAT_HIGH);
 
-    if (N_CHOICE <= N_SEATS_LEFT) {
+    if (choice <= remainingSeats) {
+        rc = pthread_mutex_unlock(&decision);
 
         sleep(i_random(T_SEAT_LOW, T_SEAT_HIGH));
 
-
         if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
 
-            bookSeats(N_CHOICE, id);
+            rc = pthread_mutex_lock(&bank);
+            *profit_ptr += (choice * C_SEAT);
+            rc = pthread_mutex_unlock(&bank);
 
+            rc = pthread_mutex_lock(&transaction);
+            ++(*transactions_ptr);
+            rc = pthread_mutex_unlock(&transaction);
+
+            rc = pthread_mutex_lock(&array);
+            *remainingSeats_ptr -= choice;
+            seatsArray[id] = choice;
+            rc = pthread_mutex_unlock(&array);
+
+            rc = pthread_mutex_lock(&print);
             Clock();
             printf("Customer %d seats booked\n", id);
+            rc = pthread_mutex_unlock(&print);
 
         } else {
-
+            rc = pthread_mutex_lock(&print);
             Clock();
             printf("Card of Customer %d failed\n", id);
-
+            rc = pthread_mutex_unlock(&print);
         }
     } else {
-
+        rc = pthread_mutex_lock(&print);
         Clock();
         printf("Not enough seats left to book.\n");
-
+        rc = pthread_mutex_unlock(&print);
     }
-    // rc = pthread_mutex_unlock(&lock1);
 
     rc = pthread_mutex_lock(&lock);
 
+    rc = pthread_mutex_lock(&print);
     Clock();
     printf("Customer %d served successfully!\n", id);
     ++(*served_ptr);
+    rc = pthread_mutex_unlock(&print);
 
     ++telephonist;
     rc = pthread_cond_broadcast(&cond);
     rc = pthread_mutex_unlock(&lock);
+
     pthread_exit(NULL); //return
 }
 
@@ -198,13 +236,6 @@ void Clock() {
     printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-void bookSeats(int choice, int id) {
-    *N_SEATS_LEFT_ptr -= choice;
-    *profit_ptr += (choice * C_SEAT);
-    ++(*transactions_ptr);
-    seatsArray[id] = choice;
-}
-
 void printArray() {
     for (int i = 0; i < customers; i++) {
         printf("%d ", seatsArray[i]);
@@ -221,8 +252,8 @@ void printInfo() {
     printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
     printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
     printf("Number of customers served: %d\n", served);
-    printf("Number of seats booked: %d\n", N_SEATS - N_SEATS_LEFT);
-    printf("Number of seats left: %d\n", N_SEATS_LEFT);
+    printf("Number of seats booked: %d\n", N_SEATS - remainingSeats);
+    printf("Number of seats left: %d\n", remainingSeats);
     printf("Transactions: %d\n", transactions);
     printf("Profit: %d\u20AC\n", profit);
     printArray();
