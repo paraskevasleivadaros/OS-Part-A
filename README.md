@@ -29,13 +29,8 @@ bash run.sh
 
 ## TO-DO
 Αν θες να περάσεις δύο ορίσματα στην pthread create βάλε struct! (Θυμήσου να το κάνεις μετά cast σε struct!)!<br>
-Το init στα mutex κάνε το πριν τα create στην main!!<br>
-Αντί για signal χρησιμοποίησε το broadcast!<br>
-Το for σου θα είναι για τους πελάτες!<br>
+
 το sleep όχι μέσα σε lock unlock!<br>
-free στο τέλος για την malloc!<br>
-Αντί για N_TEL βάλε  N_CUST!<br>
-check number of arguments!<br>
 check παντού το rc!<br>
 1 condition!<br>
 7 mutexes!<br>
