@@ -23,8 +23,8 @@ pthreads API, τα mutexes είναι κλειδαριές (duh)
 ## Ιδέες
 Πίνακας N_CUST από pointers που δείχνουν σε arrays που περιέχουν τις θέσεις που έχει κλείσει ο κάθε πελάτης
 
-## HOW TO RUN
-Ανοίγεις το terminal και με την εντολή cd πηγαίνεις στο path του project
+## How to Run
+Ανοίγεις το terminal και με την εντολή cd πηγαίνεις στο path του project<br>
 bash run.sh 
 
 ## TO-DO
