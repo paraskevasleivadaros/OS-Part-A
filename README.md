@@ -1,10 +1,6 @@
 # POSIX-Threads
 Project for the course "Λειτουργικά Συστήματα" | CS - AUEB
 
-## Διάγραμμα
-
-![Theater Threads](https://github.com/paraskevasleivadaros/POSIX-Threads/blob/master/Theater%20%20-%20UML%20Diagram/Theater%20Threads.png)
-
 ## Σημειώσεις
 
 1 νήμα για κάθε πελάτη <br>
@@ -32,11 +28,20 @@ pthreads API, τα mutexes είναι κλειδαριές (duh)
 bash run.sh 
 
 ## TO-DO
-Βάλε τις μεθόδους ακριβώς πριν την main!<br>
-Δες τι παίζει με το cust_id>N_CUST
+Αν θες να περάσεις δύο ορίσματα στην pthread create βάλε struct! (Θυμήσου να το κάνεις μετά cast σε struct!)!<br>
+Το init στα mutex κάνε το πριν τα create στην main!!<br>
+Αντί για signal χρησιμοποίησε το broadcast!<br>
+Το for σου θα είναι για τους πελάτες!<br>
+το sleep όχι μέσα σε lock unlock!<br>
+free στο τέλος για την malloc!<br>
+Αντί για N_TEL βάλε  N_CUST!<br>
+check number of arguments!<br>
+check παντού το rc!<br>
+1 condition!<br>
+7 mutexes!<br>
 
 ## Χρήσιμοι Σύνδεσμοι
 
 [Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία](https://eclass.aueb.gr/modules/wiki/page.php?course=INF168&wikiId=3941&action=show "Λειτουργικά Συστήματα/Σύστημα Wiki/Ερωτήσεις για την 1η εργασία") <br>
-[How To Use Printf In Multiple Threads](https://stackoverflow.com/questions/23586682/how-to-use-printf-in-multiple-threads "How To Use Printf In Multiple Threads")
-
+[How To Use Printf In Multiple Threads](https://stackoverflow.com/questions/23586682/how-to-use-printf-in-multiple-threads "How To Use Printf In Multiple Threads") <br>
+[How to use Mutex in multi-threaded coding](https://youtu.be/EthJVl3G21Y "How to use Mutex in multi-threaded coding")<br>
