@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <pthread.h>
 
 #define N_SEATS 250

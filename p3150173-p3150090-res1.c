@@ -2,7 +2,6 @@
 // Created by paras on 23-Mar-19.
 //
 
-#include <assert.h>
 #include "p3150173-p3150090-res1.h"
 
 unsigned int profit = 0;
@@ -16,7 +15,7 @@ _Thread_local unsigned int seed;
 int random_number;
 unsigned int choice;
 
-int *seatsArray;
+// int *seatsArray;
 
 unsigned int customers;
 unsigned int telephonist = N_TEL;
@@ -37,7 +36,8 @@ void startTimer();
 void stopTimer();
 void Clock();
 
-void printInfo(int arr[]);
+// void printInfo(int arr[]);
+void printInfo2();
 
 pthread_mutex_t lock;
 pthread_mutex_t bank;
@@ -83,14 +83,14 @@ int main(int argc, char* argv[]){
     pthread_mutex_init(&array, NULL);
     pthread_mutex_init(&print, NULL);
     pthread_mutex_init(&decision, NULL);
-
+/*
     seatsArray = malloc(customers * sizeof(int));
     if (seatsArray == NULL) {
         fprintf(stderr, "Malloc Failed\n");
         exit(-1);
     }
     memset(seatsArray, 0, sizeof(int) * customers);
-
+*/
     startTimer();
 
     for (int i = 0; i < customers; i++) {
@@ -118,7 +118,8 @@ int main(int argc, char* argv[]){
     pthread_cond_destroy(&cond);
 
     stopTimer();
-    printInfo(seatsArray);
+    //printInfo(seatsArray);
+    printInfo2();
 }
 
 void *customer(void *x) {
@@ -155,7 +156,7 @@ void *customer(void *x) {
     if (remainingSeats == 0) {
         rc = pthread_mutex_lock(&print);
         Clock();
-        printf("Sold out!");
+        printf("Sold out!\n");
         rc = pthread_mutex_unlock(&print);
     } else {
 
@@ -175,7 +176,7 @@ void *customer(void *x) {
 
                 rc = pthread_mutex_lock(&array);
                 *remainingSeats_ptr -= choice;
-                seatsArray[id] = choice;
+                // seatsArray[id] = choice;
                 rc = pthread_mutex_unlock(&array);
 
                 rc = pthread_mutex_lock(&print);
@@ -244,6 +245,7 @@ void Clock() {
     printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
+/*
 void printInfo(int arr[]) {
     printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
     printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
@@ -261,5 +263,22 @@ void printInfo(int arr[]) {
     for (int i = 0; i < customers; i++) {
         printf("%d ", arr[i]);
     }
+    printf("\nExiting..\n");
+}
+*/
+void printInfo2() {
+    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
+    long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
+    long int minutes = totalSeconds / 60;
+    long int seconds = totalSeconds % 60;
+    double avTimePerCust = ((double) (totalSeconds) / customers);
+    printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
+    printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
+    printf("Number of customers served: %02d\n", served);
+    printf("Number of seats booked: %d\n", N_SEATS - remainingSeats);
+    printf("Number of seats left: %d\n", remainingSeats);
+    printf("Transactions: %d\n", transactions);
+    printf("Profit: %d\u20AC\n", profit);
     printf("\nExiting..\n");
 }
