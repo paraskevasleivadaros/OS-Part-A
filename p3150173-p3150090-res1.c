@@ -17,6 +17,7 @@ int random_number_c;
 int random_number_f;
 unsigned int choice;
 
+int temp = 0;
 int seatsArray[N_SEATS];
 
 unsigned int customers;
@@ -42,8 +43,6 @@ void printArray();
 
 void printInfo();
 
-void initializeArray();
-
 pthread_mutex_t lock;
 pthread_mutex_t bank;
 pthread_mutex_t transaction;
@@ -56,7 +55,6 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char* argv[]){
 
-    initializeArray();
     if (argc != 3) {
         printf("Please enter only the number of customers and the seed!");
         exit(-1);
@@ -179,14 +177,11 @@ void *customer(void *x) {
 
                 rc = pthread_mutex_lock(&array);
                 *remainingSeats_ptr -= choice;
-                int counter = choice;
-                for (int i = 0; i < N_SEATS; i++) {
-                    if (counter <= 0) {
-                        i = N_SEATS;
-                    } else if (seatsArray[i] == -1) {
-                        seatsArray[i] = id - 1;
-                    }
-                    counter--;
+                for (int i = temp; i <= temp + choice; i++) {
+
+                    seatsArray[i] = id - 1;
+                    temp++;
+
                 }
                 rc = pthread_mutex_unlock(&array);
 
@@ -263,7 +258,7 @@ void Clock() {
 void printArray() {
     int printCounter = 1;
     for (int i = 0; i < N_SEATS; i++) {
-        printf("Seat %03d: Client %03d | ", i, seatsArray[i]);
+        printf("Seat %03d: Client %03d | ", i + 1, seatsArray[i]);
         if (printCounter == 5) {
             printf("\n");
             printCounter = 0;
