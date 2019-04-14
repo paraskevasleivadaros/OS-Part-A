@@ -16,7 +16,8 @@ _Thread_local unsigned int seed;
 int random_sleep;
 int random_card;
 int random_choice;
-_Thread_local unsigned int choice;
+unsigned int choice;
+unsigned int *choice_ptr = &choice;
 
 int temp = 0;
 int *temp_ptr = &temp;
@@ -33,9 +34,7 @@ struct tm start;
 struct tm end;
 
 int sleepRandom(int, int);
-
 int choiceRandom(int, int);
-
 double cardRandom(double, double);
 
 void startTimer();
@@ -55,7 +54,7 @@ pthread_mutex_t print;
 pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-bool condition(int);
+bool condition();
 
 int main(int argc, char* argv[]){
 
@@ -166,12 +165,12 @@ void *customer(void *x) {
 
     } else {
 
-        if (condition(choice)) {
+        if (condition(*choice_ptr)) {
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
                 rc = pthread_mutex_lock(&bank);
-                *profit_ptr += (choice * C_SEAT);
+                *profit_ptr += (*choice_ptr * C_SEAT);
                 rc = pthread_mutex_unlock(&bank);
 
                 rc = pthread_mutex_lock(&transaction);
@@ -179,8 +178,8 @@ void *customer(void *x) {
                 rc = pthread_mutex_unlock(&transaction);
 
                 rc = pthread_mutex_lock(&array);
-                *remainingSeats_ptr -= choice;
-                for (int i = *temp_ptr; i < (*temp_ptr + choice) && i < N_SEATS; i++) {
+                *remainingSeats_ptr -= *choice_ptr;
+                for (int i = *temp_ptr; i < (*temp_ptr + *choice_ptr) && i < N_SEATS; i++) {
 
                     seatsArray[i] = id;
                     (*temp_ptr)++;
@@ -270,10 +269,10 @@ void printArray() {
     }
 }
 
-bool condition(int choices) {
-    choice = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+bool condition() {
+    *choice_ptr = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
     pthread_mutex_lock(&decision);
-    bool result = (choices <= *remainingSeats_ptr);
+    bool result = (*choice_ptr <= *remainingSeats_ptr);
     pthread_mutex_unlock(&decision);
     return result;
 }
