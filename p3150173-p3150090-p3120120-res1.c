@@ -12,18 +12,12 @@ unsigned int *transactions_ptr = &transactions;
 unsigned int served = 0;
 unsigned int *served_ptr = &served;
 
-_Thread_local unsigned int seed;
-_Thread_local unsigned int id;
+__thread unsigned int seed;
+__thread unsigned int id;
 
 int random_sleep;
 int random_card;
 int random_choice;
-
-int temp = 0;
-int *temp_ptr = &temp;
-
-unsigned int seatsArray[N_SEATS];
-unsigned int choice[1000];
 
 unsigned int customers;
 unsigned int telephonist = N_TEL;
@@ -34,17 +28,25 @@ unsigned int *remainingSeats_ptr = &remainingSeats;
 struct timespec requestStart, requestEnd;
 struct tm start;
 struct tm end;
+struct Pairs {
+    unsigned int i;
+    unsigned int *arr1;
+    unsigned int *arr2;
+};
+static __thread struct Pairs *my_pair;
 
-int sleepRandom(int, int);
-int choiceRandom(int, int);
+unsigned int sleepRandom(int, int);
+
+unsigned int choiceRandom(int, int);
 double cardRandom(double, double);
 
 void startTimer();
 void stopTimer();
 void Clock();
 
-void printArray();
-void printInfo();
+void printArray(unsigned int *);
+
+void printInfo(unsigned int *);
 
 pthread_mutex_t lock;
 pthread_mutex_t bank;
@@ -56,7 +58,7 @@ pthread_mutex_t print;
 pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-bool condition(int i);
+bool condition(unsigned int *var1, unsigned int i);
 
 int main(int argc, char* argv[]){
 
@@ -81,9 +83,10 @@ int main(int argc, char* argv[]){
     int rc;
 
     pthread_t threads[customers];
-    unsigned int cust_id[customers];
+    unsigned int seatsArray[N_SEATS];
+    unsigned int choice[customers];
 
-    void *customer(void *);
+    void *customer(void *x);
 
     pthread_mutex_init(&lock, NULL);
     pthread_mutex_init(&bank, NULL);
@@ -96,14 +99,19 @@ int main(int argc, char* argv[]){
 
     startTimer();
 
+    struct Pairs *pair;
+
     for (int i = 0; i < customers; i++) {
-        cust_id[i] = i + 1;
         random_sleep = rand_r(&seed);
         seed++;
         random_card = rand_r(&seed);
         seed++;
         random_choice = rand_r(&seed);
-        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) cust_id[i]))) {
+        pair = malloc(sizeof(struct Pairs));
+        (*pair).i = i;
+        (*pair).arr1 = choice;
+        (*pair).arr2 = seatsArray;
+        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) pair))) {
             Clock();
             printf("Thread Creation Error\n");
             exit(1);
@@ -130,13 +138,17 @@ int main(int argc, char* argv[]){
 
 void *customer(void *x) {
 
-    id = (int) (int *) x;
     int rc;
 
-    // rc = pthread_mutex_lock(&print);
+    my_pair = (struct Pairs *) x;
+    id = (*my_pair).i;
+    unsigned int *choice = (*my_pair).arr1;
+    rc = pthread_mutex_lock(&array);
+    unsigned int *seatsArray = (*my_pair).arr2;
+    rc = pthread_mutex_unlock(&array);
+
     // Clock();
     // printf("Customer %03d calling..\n", (id));
-    // rc = pthread_mutex_unlock(&print);
 
     rc = pthread_mutex_lock(&lock);
 
@@ -167,7 +179,7 @@ void *customer(void *x) {
 
     } else {
 
-        if (condition(id)) {
+        if (condition(choice, id)) {
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
@@ -181,11 +193,16 @@ void *customer(void *x) {
 
                 rc = pthread_mutex_lock(&array);
                 *remainingSeats_ptr -= choice[id];
-                for (int i = *temp_ptr; i < (*temp_ptr + choice[id]) && i < N_SEATS; i++) {
-
-                    seatsArray[i] = id;
-                    (*temp_ptr)++;
-
+                //for (int i = 0; i < (*temp_ptr + choice[id]) && i < N_SEATS; i++) {
+                int flag = 0;
+                for (int i = 0; i < N_SEATS; i++) {
+                    if (seatsArray[i] == 0) {
+                        for (int j = 0; j < choice[id]; j++) {
+                            seatsArray[j] = id;
+                            flag = 1;
+                        }
+                    }
+                    if (flag) break;
                 }
                 rc = pthread_mutex_unlock(&array);
 
@@ -223,11 +240,11 @@ void *customer(void *x) {
     pthread_exit(NULL); //return
 }
 
-int sleepRandom(int min, int max) {
+unsigned int sleepRandom(int min, int max) {
     return (random_sleep % (max - min + 1)) + min;
 }
 
-int choiceRandom(int min, int max) {
+unsigned int choiceRandom(int min, int max) {
     return (random_choice % (max - min + 1)) + min;
 }
 
@@ -256,13 +273,13 @@ void stopTimer(){
 void Clock() {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    printf("[%d:%d:%d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
+    printf("[%02d:%02d:%02d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-void printArray() {
+void printArray(unsigned int *arr) {
     int printCounter = 1;
     for (int i = 0; i < N_SEATS; i++) {
-        printf("Θέση %03d: Πελάτης %03d | ", i + 1, seatsArray[i]);
+        printf("Θέση %03d: Πελάτης %03d | ", i + 1, arr[i]);
         if (printCounter == 5) {
             printf("\n");
             printCounter = 0;
@@ -271,10 +288,10 @@ void printArray() {
     }
 }
 
-bool condition(int i) {
-    choice[i] = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+bool condition(unsigned int *var1, unsigned int i) {
+    var1[i] = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
     pthread_mutex_lock(&decision);
-    bool result = (choice[i] <= *remainingSeats_ptr);
+    bool result = (var1[i] <= *remainingSeats_ptr);
     pthread_mutex_unlock(&decision);
     if (!result) {
         printf("Η κράτηση ματαιώθηκε γιατί δενυπάρχουν αρκετές διαθέσιμες θέσεις\n");
@@ -282,17 +299,17 @@ bool condition(int i) {
     return result;
 }
 
-void printInfo() {
+void printInfo(unsigned int *arr) {
     long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
     long int minutes = totalSeconds / 60;
     long int seconds = totalSeconds % 60;
     double avTimePerCust = ((double) (totalSeconds) / customers);
-    printArray();
-    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printArray(arr);
+    printf("\nStart [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
     printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
-    printf("Διάρκεια: %ld λεπτό/ά και %ld δευτερόλεπτο/α (%lds)\n\n", minutes, seconds, totalSeconds);
-    printf("Μέσος χρόνος αναμονής: %0.2f seconds\n\n", avTimePerCust);
-    printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n\n", avTimePerCust);
+    printf("Διάρκεια: %ld λεπτό/ά και %ld δευτερόλεπτο/α (%lds)\n", minutes, seconds, totalSeconds);
+    printf("Μέσος χρόνος αναμονής: %0.2f seconds\n", avTimePerCust);
+    printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n", avTimePerCust);
     printf("Number of customers served: %03d\n", served);
     printf("Number of seats booked: %d\n", N_SEATS - remainingSeats);
     printf("Number of seats left: %d\n", remainingSeats);
