@@ -83,6 +83,7 @@ int main(int argc, char* argv[]){
     int rc;
 
     pthread_t threads[customers];
+
     unsigned int seatsArray[N_SEATS];
     unsigned int choice[customers];
 
