@@ -13,15 +13,17 @@ unsigned int served = 0;
 unsigned int *served_ptr = &served;
 
 _Thread_local unsigned int seed;
+_Thread_local unsigned int id;
+
 int random_sleep;
 int random_card;
 int random_choice;
-unsigned int choice;
-unsigned int *choice_ptr = &choice;
 
 int temp = 0;
 int *temp_ptr = &temp;
-int seatsArray[N_SEATS];
+
+unsigned int seatsArray[N_SEATS];
+unsigned int choice[1000];
 
 unsigned int customers;
 unsigned int telephonist = N_TEL;
@@ -54,7 +56,7 @@ pthread_mutex_t print;
 pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-bool condition();
+bool condition(int i);
 
 int main(int argc, char* argv[]){
 
@@ -79,7 +81,7 @@ int main(int argc, char* argv[]){
     int rc;
 
     pthread_t threads[customers];
-    int id[customers];
+    unsigned int cust_id[customers];
 
     void *customer(void *);
 
@@ -95,13 +97,13 @@ int main(int argc, char* argv[]){
     startTimer();
 
     for (int i = 0; i < customers; i++) {
-        id[i] = i + 1;
+        cust_id[i] = i + 1;
         random_sleep = rand_r(&seed);
         seed++;
         random_card = rand_r(&seed);
         seed++;
         random_choice = rand_r(&seed);
-        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) id[i]))) {
+        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) cust_id[i]))) {
             Clock();
             printf("Thread Creation Error\n");
             exit(1);
@@ -128,29 +130,29 @@ int main(int argc, char* argv[]){
 
 void *customer(void *x) {
 
-    int id = (int) (int *) x;
+    id = (int) (int *) x;
     int rc;
 
-    rc = pthread_mutex_lock(&print);
-    Clock();
-    printf("Customer %02d calling..\n", (id));
-    rc = pthread_mutex_unlock(&print);
+    // rc = pthread_mutex_lock(&print);
+    // Clock();
+    // printf("Customer %03d calling..\n", (id));
+    // rc = pthread_mutex_unlock(&print);
 
     rc = pthread_mutex_lock(&lock);
 
     while (telephonist == 0) {
 
-        rc = pthread_mutex_lock(&print);
-        Clock();
-        printf("Customer %02d couldn't find telephonist available. Blocked..\n", id);
-        rc = pthread_mutex_unlock(&print);
+        // rc = pthread_mutex_lock(&print);
+        // Clock();
+        // printf("Customer %03d couldn't find telephonist available. Blocked..\n", id);
+        // rc = pthread_mutex_unlock(&print);
         rc = pthread_cond_wait(&cond, &lock);
     }
 
-    rc = pthread_mutex_lock(&print);
-    Clock();
-    printf("Customer %02d being served..\n", id);
-    rc = pthread_mutex_unlock(&print);
+    // rc = pthread_mutex_lock(&print);
+    // Clock();
+    // printf("Customer %03d being served..\n", id);
+    // rc = pthread_mutex_unlock(&print);
 
     --telephonist;
     rc = pthread_mutex_unlock(&lock);
@@ -160,17 +162,17 @@ void *customer(void *x) {
     if (*remainingSeats_ptr == 0) {
         rc = pthread_mutex_lock(&print);
         Clock();
-        printf("Sold out!\n");
+        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n");
         rc = pthread_mutex_unlock(&print);
 
     } else {
 
-        if (condition(*choice_ptr)) {
+        if (condition(id)) {
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
                 rc = pthread_mutex_lock(&bank);
-                *profit_ptr += (*choice_ptr * C_SEAT);
+                *profit_ptr += (choice[id] * C_SEAT);
                 rc = pthread_mutex_unlock(&bank);
 
                 rc = pthread_mutex_lock(&transaction);
@@ -178,8 +180,8 @@ void *customer(void *x) {
                 rc = pthread_mutex_unlock(&transaction);
 
                 rc = pthread_mutex_lock(&array);
-                *remainingSeats_ptr -= *choice_ptr;
-                for (int i = *temp_ptr; i < (*temp_ptr + *choice_ptr) && i < N_SEATS; i++) {
+                *remainingSeats_ptr -= choice[id];
+                for (int i = *temp_ptr; i < (*temp_ptr + choice[id]) && i < N_SEATS; i++) {
 
                     seatsArray[i] = id;
                     (*temp_ptr)++;
@@ -189,13 +191,13 @@ void *customer(void *x) {
 
                 rc = pthread_mutex_lock(&print);
                 Clock();
-                printf("Customer %02d seats booked\n", id);
+                printf("Customer %03d seats booked\n", id);
                 rc = pthread_mutex_unlock(&print);
 
             } else {
                 rc = pthread_mutex_lock(&print);
                 Clock();
-                printf("Card of Customer %02d failed\n", id);
+                printf("Η κράτηση ματαιώθηκε γιατί η συναλλαγή με την πιστωτική κάρτα δεν έγινε αποδεκτή\n");
                 rc = pthread_mutex_unlock(&print);
             }
         } else {
@@ -210,7 +212,7 @@ void *customer(void *x) {
 
     rc = pthread_mutex_lock(&print);
     Clock();
-    printf("Customer %02d served successfully!\n", id);
+    printf("Customer %03d served successfully!\n", id);
     ++(*served_ptr);
     rc = pthread_mutex_unlock(&print);
 
@@ -260,7 +262,7 @@ void Clock() {
 void printArray() {
     int printCounter = 1;
     for (int i = 0; i < N_SEATS; i++) {
-        printf("Seat %03d: Client %03d | ", i + 1, seatsArray[i]);
+        printf("Θέση %03d: Πελάτης %03d | ", i + 1, seatsArray[i]);
         if (printCounter == 5) {
             printf("\n");
             printCounter = 0;
@@ -269,28 +271,32 @@ void printArray() {
     }
 }
 
-bool condition() {
-    *choice_ptr = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+bool condition(int i) {
+    choice[i] = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
     pthread_mutex_lock(&decision);
-    bool result = (*choice_ptr <= *remainingSeats_ptr);
+    bool result = (choice[i] <= *remainingSeats_ptr);
     pthread_mutex_unlock(&decision);
+    if (!result) {
+        printf("Η κράτηση ματαιώθηκε γιατί δενυπάρχουν αρκετές διαθέσιμες θέσεις\n");
+    }
     return result;
 }
 
 void printInfo() {
-    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
-    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
     long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
     long int minutes = totalSeconds / 60;
     long int seconds = totalSeconds % 60;
     double avTimePerCust = ((double) (totalSeconds) / customers);
-    printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
-    printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
+    printArray();
+    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
+    printf("Διάρκεια: %ld λεπτό/ά και %ld δευτερόλεπτο/α (%lds)\n\n", minutes, seconds, totalSeconds);
+    printf("Μέσος χρόνος αναμονής: %0.2f seconds\n\n", avTimePerCust);
+    printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n\n", avTimePerCust);
     printf("Number of customers served: %03d\n", served);
     printf("Number of seats booked: %d\n", N_SEATS - remainingSeats);
     printf("Number of seats left: %d\n", remainingSeats);
-    printf("Transactions: %d\n", transactions);
-    printf("Profit: %d\u20AC\n", profit);
-    printArray();
+    printf("Συναλλαγές: %d\n", transactions);
+    printf("Έσοδα: %d\u20AC\n", profit);
     printf("\nExiting..\n");
 }
