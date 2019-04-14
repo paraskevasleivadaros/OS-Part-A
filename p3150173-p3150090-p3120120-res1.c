@@ -2,7 +2,8 @@
 // Created by paras on 23-Mar-19.
 //
 
-#include "p3150173-p3150090-res1.h"
+#include <stdbool.h>
+#include "p3150173-p3150090-p3120120-res1.h"
 
 unsigned int profit = 0;
 unsigned int *profit_ptr = &profit;
@@ -12,12 +13,13 @@ unsigned int served = 0;
 unsigned int *served_ptr = &served;
 
 _Thread_local unsigned int seed;
-int random_number_s;
-int random_number_c;
-int random_number_f;
-unsigned int choice;
+int random_sleep;
+int random_card;
+int random_choice;
+_Thread_local unsigned int choice;
 
 int temp = 0;
+int *temp_ptr = &temp;
 int seatsArray[N_SEATS];
 
 unsigned int customers;
@@ -30,17 +32,17 @@ struct timespec requestStart, requestEnd;
 struct tm start;
 struct tm end;
 
-int s_random(int, int);
+int sleepRandom(int, int);
 
-int c_random(int, int);
-double f_random(double, double);
+int choiceRandom(int, int);
+
+double cardRandom(double, double);
 
 void startTimer();
 void stopTimer();
 void Clock();
 
 void printArray();
-
 void printInfo();
 
 pthread_mutex_t lock;
@@ -52,6 +54,8 @@ pthread_mutex_t array;
 pthread_mutex_t print;
 pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+bool condition(int);
 
 int main(int argc, char* argv[]){
 
@@ -71,8 +75,8 @@ int main(int argc, char* argv[]){
         exit(-2);
     }
 
-    printf("Customers to be served: %02d\n\n", customers);
-
+    printf("Customers to be served: %03d\n\n", customers);
+    sleep(2);
     int rc;
 
     pthread_t threads[customers];
@@ -93,11 +97,11 @@ int main(int argc, char* argv[]){
 
     for (int i = 0; i < customers; i++) {
         id[i] = i + 1;
-
-        random_number_s = rand_r(&seed);
-        random_number_c = rand_r(&seed);
-        random_number_f = rand_r(&seed);
-
+        random_sleep = rand_r(&seed);
+        seed++;
+        random_card = rand_r(&seed);
+        seed++;
+        random_choice = rand_r(&seed);
         if ((rc = pthread_create(&threads[i], NULL, customer, (void *) id[i]))) {
             Clock();
             printf("Thread Creation Error\n");
@@ -152,20 +156,19 @@ void *customer(void *x) {
     --telephonist;
     rc = pthread_mutex_unlock(&lock);
 
-    sleep(s_random(T_SEAT_LOW, T_SEAT_HIGH));
+    sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
-    if (remainingSeats == 0) {
+    if (*remainingSeats_ptr == 0) {
         rc = pthread_mutex_lock(&print);
         Clock();
         printf("Sold out!\n");
         rc = pthread_mutex_unlock(&print);
+
     } else {
 
-        choice = c_random(N_SEAT_LOW, N_SEAT_HIGH);
+        if (condition(choice)) {
 
-        if (choice <= remainingSeats) {
-
-            if (f_random(0.0, 1.0) < P_CARD_SUCCESS) {
+            if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
                 rc = pthread_mutex_lock(&bank);
                 *profit_ptr += (choice * C_SEAT);
@@ -177,10 +180,10 @@ void *customer(void *x) {
 
                 rc = pthread_mutex_lock(&array);
                 *remainingSeats_ptr -= choice;
-                for (int i = temp; i <= temp + choice; i++) {
+                for (int i = *temp_ptr; i < (*temp_ptr + choice) && i < N_SEATS; i++) {
 
-                    seatsArray[i] = id - 1;
-                    temp++;
+                    seatsArray[i] = id;
+                    (*temp_ptr)++;
 
                 }
                 rc = pthread_mutex_unlock(&array);
@@ -219,16 +222,16 @@ void *customer(void *x) {
     pthread_exit(NULL); //return
 }
 
-int s_random(int min, int max) {
-    return (random_number_s % (max - min + 1)) + min;
+int sleepRandom(int min, int max) {
+    return (random_sleep % (max - min + 1)) + min;
 }
 
-int c_random(int min, int max) {
-    return (random_number_c % (max - min + 1)) + min;
+int choiceRandom(int min, int max) {
+    return (random_choice % (max - min + 1)) + min;
 }
 
-double f_random(double min, double max){
-    double f = (double) random_number_f / RAND_MAX;
+double cardRandom(double min, double max) {
+    double f = (double) random_card / RAND_MAX;
     return min + f * (max - min);
 }
 
@@ -267,6 +270,14 @@ void printArray() {
     }
 }
 
+bool condition(int choices) {
+    choice = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+    pthread_mutex_lock(&decision);
+    bool result = (choices <= *remainingSeats_ptr);
+    pthread_mutex_unlock(&decision);
+    return result;
+}
+
 void printInfo() {
     printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
     printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
@@ -276,7 +287,7 @@ void printInfo() {
     double avTimePerCust = ((double) (totalSeconds) / customers);
     printf("Duration: %ld minutes and %ld seconds (%lds)\n\n", minutes, seconds, totalSeconds);
     printf("Average time per customer: %0.2f seconds\n\n", avTimePerCust);
-    printf("Number of customers served: %02d\n", served);
+    printf("Number of customers served: %03d\n", served);
     printf("Number of seats booked: %d\n", N_SEATS - remainingSeats);
     printf("Number of seats left: %d\n", remainingSeats);
     printf("Transactions: %d\n", transactions);
