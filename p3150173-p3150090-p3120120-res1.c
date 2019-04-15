@@ -298,7 +298,7 @@ bool checkRemainingSeats() {
 void printArray(unsigned int *arr) {
     int rc = pthread_mutex_lock(&arrayLock);
     int printCounter = 1;
-    printf("|");
+    printf("| ");
     for (int i = 0; i < N_SEATS; i++) {
         if (arr[i] == 0) {
             printf("Θέση %03d: Πελάτης     | ", i + 1);
@@ -306,7 +306,7 @@ void printArray(unsigned int *arr) {
             printf("Θέση %03d: Πελάτης %03d | ", i + 1, arr[i]);
         }
         if (printCounter == 6) {
-            printf("\n|");
+            printf("\n| ");
             printCounter = 0;
         }
         printCounter += 1;
@@ -314,14 +314,7 @@ void printArray(unsigned int *arr) {
     rc = pthread_mutex_unlock(&arrayLock);
 }
 
-void printInfo() {
-    unsigned long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
-    unsigned long int minutes = totalSeconds / 60;
-    unsigned long int seconds = totalSeconds % 60;
-    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
-    printf("End   [%d:%d:%d]\n\n", end.tm_hour, end.tm_min, end.tm_sec);
-    printArray(seatsArray);
-    printf("\n");
+void printDuration(long int minutes, long int seconds, long int totalSeconds) {
     if (minutes > 1) {
         printf("Διάρκεια: %ld λεπτά ", minutes);
     } else {
@@ -332,6 +325,18 @@ void printInfo() {
     } else {
         printf("και %ld δευτερόλεπτο (%lds)\n", seconds, totalSeconds);
     }
+}
+
+void printInfo() {
+    unsigned long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
+    unsigned long int minutes = totalSeconds / 60;
+    unsigned long int seconds = totalSeconds % 60;
+    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("End   [%d:%d:%d]\n", end.tm_hour, end.tm_min, end.tm_sec);
+    printDuration(minutes, seconds, totalSeconds);
+    printf("\n");
+    printArray(seatsArray);
+    printf("\n\n");
     printf("Μέσος χρόνος αναμονής: %0.2f seconds\n", (double) avgWaitTime / customers);
     printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n", (double) avgServingTime / customers);
     printf("Εξυπηρετήθηκαν: %03d πελάτες\n", served);
