@@ -11,6 +11,7 @@ unsigned int customers;
 unsigned int telephonist = N_TEL;
 unsigned int remainingSeats = N_SEATS;
 unsigned int seed;
+unsigned int seats;
 
 unsigned int *profit_ptr = &profit;
 unsigned int *transactions_ptr = &transactions;
@@ -40,8 +41,11 @@ void startTimer();
 void stopTimer();
 void Clock();
 
-void printArray(unsigned int *);
+unsigned int bank(int);
 
+void bookSeats(unsigned int, int);
+
+void printArray(unsigned int *);
 void printInfo();
 
 pthread_mutex_t operatorsLock;
@@ -54,8 +58,9 @@ pthread_mutex_t screenLock;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 bool checkAvailableSeats(unsigned int);
-
 bool checkRemainingSeats();
+
+unsigned int transaction();
 
 int main(int argc, char* argv[]){
 
@@ -166,37 +171,22 @@ void *customer(void *x) {
 
     } else {
 
-        unsigned int seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
-        if (checkAvailableSeats(seats)) {
+        if (checkAvailableSeats(seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH))) {
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
-                rc = pthread_mutex_lock(&arrayLock);
-                int temp = seats;
-                for (int i = 0; temp > 0 && i < N_SEATS; i++) {
-                    if (seatsArray[i] == 0) {
-                        seatsArray[i] = id;
-                        temp--;
-                    }
-                }
-                (*remainingSeats_ptr) -= seats;
-                rc = pthread_mutex_unlock(&arrayLock);
+                bookSeats(seats, id);
 
-                rc = pthread_mutex_lock(&bankLock);
-                *profit_ptr += (seats * C_SEAT);
-                rc = pthread_mutex_unlock(&bankLock);
-
-                rc = pthread_mutex_lock(&transactionLock);
-                int transactionID = ++(*transactions_ptr);
-                rc = pthread_mutex_unlock(&transactionLock);
+                unsigned int cost = bank(seats);
+                unsigned int transactionID = transaction();
 
                 rc = pthread_mutex_lock(&screenLock);
                 Clock();
                 printf("Οι θέσεις για τον πελάτη %03d δεσμεύθηκαν επιτυχώς\n", id);
-                Clock();
+                printf("           ");
                 printf("Κωδικός Συναλλαγής: %03d\n", transactionID);
                 rc = pthread_mutex_lock(&arrayLock);
-                Clock();
+                printf("           ");
                 printf("Θέσεις: ");
                 for (int i = 0; i < N_SEATS; i++) {
                     if (seatsArray[i] == id) {
@@ -205,8 +195,8 @@ void *customer(void *x) {
                 }
                 printf("\n");
                 rc = pthread_mutex_unlock(&arrayLock);
-                Clock();
-                printf("Κόστος: %03d\u20AC\n", seats * C_SEAT);
+                printf("           ");
+                printf("Κόστος: %03d\u20AC\n", cost);
                 rc = pthread_mutex_unlock(&screenLock);
 
             } else {
@@ -238,6 +228,13 @@ void *customer(void *x) {
     rc = pthread_mutex_unlock(&avgServingTimeLock);
 
     pthread_exit(NULL); //return
+}
+
+unsigned int transaction() {
+    int rc = pthread_mutex_lock(&transactionLock);
+    unsigned int transactionID = ++(*transactions_ptr);
+    rc = pthread_mutex_unlock(&transactionLock);
+    return transactionID;
 }
 
 unsigned int sleepRandom(int min, int max) {
@@ -274,6 +271,27 @@ void Clock() {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     printf("[%02d:%02d:%02d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
+
+unsigned int bank(int numOfSeats) {
+    int rc = pthread_mutex_lock(&bankLock);
+    unsigned int cost = numOfSeats * C_SEAT;
+    *profit_ptr += (cost);
+    rc = pthread_mutex_unlock(&bankLock);
+    return cost;
+}
+
+void bookSeats(unsigned int numOfSeats, int custID) {
+    int rc = pthread_mutex_lock(&arrayLock);
+    int temp = seats;
+    for (int i = 0; temp > 0 && i < N_SEATS; i++) {
+        if (seatsArray[i] == 0) {
+            seatsArray[i] = custID;
+            temp--;
+        }
+    }
+    (*remainingSeats_ptr) -= seats;
+    rc = pthread_mutex_unlock(&arrayLock);
 }
 
 bool checkAvailableSeats(unsigned int choice) {
