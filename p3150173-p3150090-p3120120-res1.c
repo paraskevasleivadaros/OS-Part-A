@@ -2,7 +2,6 @@
 // Created by paras on 23-Mar-19.
 //
 
-#include <stdbool.h>
 #include "p3150173-p3150090-p3120120-res1.h"
 
 unsigned int profit = 0;
@@ -12,8 +11,10 @@ unsigned int *transactions_ptr = &transactions;
 unsigned int served = 0;
 unsigned int *served_ptr = &served;
 
+unsigned int seatsArray[N_SEATS];
+unsigned int choice[100];
+
 __thread unsigned int seed;
-__thread unsigned int id;
 
 int random_sleep;
 int random_card;
@@ -29,11 +30,12 @@ struct timespec requestStart, requestEnd;
 struct tm start;
 struct tm end;
 struct Pairs {
-    unsigned int i;
+    unsigned int ID;
     unsigned int *arr1;
     unsigned int *arr2;
 };
-static __thread struct Pairs *my_pair;
+
+__thread struct Pairs *my_pair;
 
 unsigned int sleepRandom(int, int);
 
@@ -58,7 +60,7 @@ pthread_mutex_t print;
 pthread_mutex_t decision;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-bool condition(unsigned int *var1, unsigned int i);
+bool checkAvailableSeats();
 
 int main(int argc, char* argv[]){
 
@@ -84,9 +86,6 @@ int main(int argc, char* argv[]){
 
     pthread_t threads[customers];
 
-    unsigned int seatsArray[N_SEATS];
-    unsigned int choice[customers];
-
     void *customer(void *x);
 
     pthread_mutex_init(&lock, NULL);
@@ -100,19 +99,16 @@ int main(int argc, char* argv[]){
 
     startTimer();
 
-    struct Pairs *pair;
+    int id[customers];
 
     for (int i = 0; i < customers; i++) {
+        id[i] = i + 1;
         random_sleep = rand_r(&seed);
         seed++;
         random_card = rand_r(&seed);
         seed++;
         random_choice = rand_r(&seed);
-        pair = malloc(sizeof(struct Pairs));
-        (*pair).i = i;
-        (*pair).arr1 = choice;
-        (*pair).arr2 = seatsArray;
-        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) pair))) {
+        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) id))) {
             Clock();
             printf("Thread Creation Error\n");
             exit(1);
@@ -140,32 +136,18 @@ int main(int argc, char* argv[]){
 void *customer(void *x) {
 
     int rc;
+    int id = (int) x;
 
-    my_pair = (struct Pairs *) x;
-    id = (*my_pair).i;
-    unsigned int *choice = (*my_pair).arr1;
-    rc = pthread_mutex_lock(&array);
-    unsigned int *seatsArray = (*my_pair).arr2;
-    rc = pthread_mutex_unlock(&array);
-
-    // Clock();
-    // printf("Customer %03d calling..\n", (id));
+    // Customer calling..
 
     rc = pthread_mutex_lock(&lock);
 
     while (telephonist == 0) {
-
-        // rc = pthread_mutex_lock(&print);
-        // Clock();
-        // printf("Customer %03d couldn't find telephonist available. Blocked..\n", id);
-        // rc = pthread_mutex_unlock(&print);
+        // Customer couldn't find telephonist available. Blocked..
         rc = pthread_cond_wait(&cond, &lock);
     }
 
-    // rc = pthread_mutex_lock(&print);
-    // Clock();
-    // printf("Customer %03d being served..\n", id);
-    // rc = pthread_mutex_unlock(&print);
+    // Customer being served..
 
     --telephonist;
     rc = pthread_mutex_unlock(&lock);
@@ -180,12 +162,12 @@ void *customer(void *x) {
 
     } else {
 
-        if (condition(choice, id)) {
+        if (checkAvailableSeats(id)) {
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
                 rc = pthread_mutex_lock(&bank);
-                *profit_ptr += (choice[id] * C_SEAT);
+                *profit_ptr += (choice1[id] * C_SEAT);
                 rc = pthread_mutex_unlock(&bank);
 
                 rc = pthread_mutex_lock(&transaction);
@@ -193,13 +175,13 @@ void *customer(void *x) {
                 rc = pthread_mutex_unlock(&transaction);
 
                 rc = pthread_mutex_lock(&array);
-                *remainingSeats_ptr -= choice[id];
-                //for (int i = 0; i < (*temp_ptr + choice[id]) && i < N_SEATS; i++) {
+                *remainingSeats_ptr -= choice1[id];
+                //for (int i = 0; i < (*temp_ptr + choice1[id]) && i < N_SEATS; i++) {
                 int flag = 0;
                 for (int i = 0; i < N_SEATS; i++) {
-                    if (seatsArray[i] == 0) {
-                        for (int j = 0; j < choice[id]; j++) {
-                            seatsArray[j] = id;
+                    if (seatsArray1[i] == 0) {
+                        for (int j = 0; j < choice1[id]; j++) {
+                            seatsArray1[j] = id;
                             flag = 1;
                         }
                     }
@@ -289,13 +271,15 @@ void printArray(unsigned int *arr) {
     }
 }
 
-bool condition(unsigned int *var1, unsigned int i) {
+bool checkAvailableSeats(unsigned int *var1, unsigned int i) {
+    int rc = pthread_mutex_lock(&array);
     var1[i] = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+    rc = pthread_mutex_unlock(&array);
     pthread_mutex_lock(&decision);
     bool result = (var1[i] <= *remainingSeats_ptr);
     pthread_mutex_unlock(&decision);
     if (!result) {
-        printf("Η κράτηση ματαιώθηκε γιατί δενυπάρχουν αρκετές διαθέσιμες θέσεις\n");
+        printf("Η κράτηση ματαιώθηκε γιατί δεν υπάρχουν αρκετές διαθέσιμες θέσεις\n");
     }
     return result;
 }
