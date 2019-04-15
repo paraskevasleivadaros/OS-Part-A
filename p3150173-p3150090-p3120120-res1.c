@@ -10,17 +10,17 @@ unsigned int served = 0;
 unsigned int customers;
 unsigned int telephonist = N_TEL;
 unsigned int remainingSeats = N_SEATS;
+unsigned int seed;
 
 unsigned int *profit_ptr = &profit;
 unsigned int *transactions_ptr = &transactions;
 unsigned int *served_ptr = &served;
 unsigned int *remainingSeats_ptr = &remainingSeats;
 unsigned int seatsArray[N_SEATS];
-__thread unsigned int seed;
 
-int random_sleep;
-int random_card;
-int random_choice;
+unsigned int random_sleep;
+unsigned int random_card;
+unsigned int random_choice;
 
 // Calculate time taken by a request
 struct timespec requestStart, requestEnd;
@@ -298,13 +298,15 @@ bool checkRemainingSeats() {
 void printArray(unsigned int *arr) {
     int rc = pthread_mutex_lock(&arrayLock);
     int printCounter = 1;
+    printf("|");
     for (int i = 0; i < N_SEATS; i++) {
         if (arr[i] == 0) {
             printf("Θέση %03d: Πελάτης     | ", i + 1);
+        } else {
+            printf("Θέση %03d: Πελάτης %03d | ", i + 1, arr[i]);
         }
-        printf("Θέση %03d: Πελάτης %03d | ", i + 1, arr[i]);
-        if (printCounter == 5) {
-            printf("\n");
+        if (printCounter == 6) {
+            printf("\n|");
             printCounter = 0;
         }
         printCounter += 1;
