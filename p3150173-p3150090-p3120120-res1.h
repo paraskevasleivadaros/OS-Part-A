@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #define N_SEATS 250
 #define N_TEL 8
