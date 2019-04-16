@@ -41,7 +41,6 @@ void checkRC(int);
 
 unsigned int bank(int);
 void bookSeats(unsigned int, int);
-
 void unbookSeats(unsigned int, int);
 
 void printArray(unsigned int *);
@@ -60,8 +59,6 @@ bool checkAvailableSeats(unsigned int);
 bool checkRemainingSeats();
 
 unsigned int transaction();
-
-void unbookSeats(unsigned int seats, int id);
 
 int main(int argc, char* argv[]){
 
@@ -90,10 +87,14 @@ int main(int argc, char* argv[]){
 
     void *customer(void *x);
 
-    rc = pthread_mutex_init(&operatorsLock, NULL); checkRC(rc);
-    rc = pthread_mutex_init(&bankLock, NULL); checkRC(rc);
-    rc = pthread_mutex_init(&transactionLock, NULL); checkRC(rc);
-    rc = pthread_mutex_init(&avgWaitTimeLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&operatorsLock, NULL);
+    checkRC(rc);
+    rc = pthread_mutex_init(&bankLock, NULL);
+    checkRC(rc);
+    rc = pthread_mutex_init(&transactionLock, NULL);
+    checkRC(rc);
+    rc = pthread_mutex_init(&avgWaitTimeLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&avgServingTimeLock, NULL);
     checkRC(rc);
     rc = pthread_mutex_init(&arrayLock, NULL);
@@ -104,12 +105,8 @@ int main(int argc, char* argv[]){
     startTimer();
     for (int i = 0; i < customers; i++) {
         id[i] = i + 1;
-
-        if ((rc = pthread_create(&threads[i], NULL, customer, (void *) id[i]))) {
-            Clock();
-            printf("Thread Creation Error\n");
-            exit(1);
-        }
+        rc = pthread_create(&threads[i], NULL, customer, (void *) id[i]);
+        checkRC(rc);
     }
 
     for (int i = 0; i < customers; i++) {
@@ -140,13 +137,15 @@ void *customer(void *x) {
     // Customer calling..
     clock_gettime(CLOCK_REALTIME, &servStart);
 
-    rc = pthread_mutex_lock(&operatorsLock); checkRC(rc);
+    rc = pthread_mutex_lock(&operatorsLock);
+    checkRC(rc);
 
     clock_gettime(CLOCK_REALTIME, &waitStart);
 
     while (telephonist == 0) {
         // Customer couldn't find telephonist available. Blocked..
-        rc = pthread_cond_wait(&cond, &operatorsLock); checkRC(rc);
+        rc = pthread_cond_wait(&cond, &operatorsLock);
+        checkRC(rc);
     }
 
     clock_gettime(CLOCK_REALTIME, &waitEnd);
@@ -154,11 +153,14 @@ void *customer(void *x) {
     // Customer being served..
     --telephonist;
 
-    rc = pthread_mutex_unlock(&operatorsLock); checkRC(rc);
+    rc = pthread_mutex_unlock(&operatorsLock);
+    checkRC(rc);
 
-    rc = pthread_mutex_lock(&avgWaitTimeLock); checkRC(rc);
+    rc = pthread_mutex_lock(&avgWaitTimeLock);
+    checkRC(rc);
     *avgWaitTime_ptr = *avgWaitTime_ptr + (waitEnd.tv_sec - waitStart.tv_sec);
-    rc = pthread_mutex_unlock(&avgWaitTimeLock); checkRC(rc);
+    rc = pthread_mutex_unlock(&avgWaitTimeLock);
+    checkRC(rc);
 
     sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
@@ -227,7 +229,6 @@ void *customer(void *x) {
     checkRC(rc);
     rc = pthread_mutex_unlock(&operatorsLock);
     checkRC(rc);
-
 
     rc = pthread_mutex_lock(&avgServingTimeLock);
     checkRC(rc);
@@ -343,6 +344,7 @@ bool checkAvailableSeats(unsigned int choice) {
         pthread_mutex_unlock(&screenLock);
     }
     rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
     return result;
 }
 
@@ -356,8 +358,6 @@ bool checkRemainingSeats() {
 }
 
 void printArray(unsigned int *arr) {
-    int rc = pthread_mutex_lock(&arrayLock);
-    checkRC(rc);
     int printCounter = 1;
     printf("| ");
     for (int i = 0; i < N_SEATS; i++) {
@@ -372,8 +372,6 @@ void printArray(unsigned int *arr) {
         }
         printCounter += 1;
     }
-    rc = pthread_mutex_unlock(&arrayLock);
-    checkRC(rc);
 }
 
 void printDuration(long int minutes, long int seconds, long int totalSeconds) {
@@ -402,12 +400,8 @@ void printInfo() {
     printf("Μέσος χρόνος αναμονής: %0.2f seconds\n", (double) avgWaitTime / customers);
     printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n", (double) avgServingTime / customers);
     printf("Εξυπηρετήθηκαν: %03d πελάτες\n", served);
-    int rc = pthread_mutex_lock(&arrayLock);
-    checkRC(rc);
     printf("Δεσμευμένες Θέσεις: %d\n", N_SEATS - (*remainingSeats_ptr));
     printf("Ελεύθερες Θέσεις: %d\n", (*remainingSeats_ptr));
-    rc = pthread_mutex_unlock(&arrayLock);
-    checkRC(rc);
     printf("Συναλλαγές: %d\n", (*transactions_ptr));
     printf("Κέρδη: %d\u20AC\n", (*profit_ptr));
     printf("\nExiting..\n");
