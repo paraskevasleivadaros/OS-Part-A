@@ -91,12 +91,19 @@ int main(int argc, char* argv[]){
     void *customer(void *x);
 
     rc = pthread_mutex_init(&operatorsLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&bankLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&transactionLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&avgWaitTimeLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&avgServingTimeLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&arrayLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&screenLock, NULL);
+    checkRC(rc);
 
     startTimer();
     for (int i = 0; i < customers; i++) {
@@ -145,6 +152,7 @@ void *customer(void *x) {
     while (telephonist == 0) {
         // Customer couldn't find telephonist available. Blocked..
         rc = pthread_cond_wait(&cond, &operatorsLock);
+        checkRC(rc);
     }
 
     clock_gettime(CLOCK_REALTIME, &waitEnd);
