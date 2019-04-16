@@ -37,9 +37,12 @@ void startTimer();
 void stopTimer();
 void Clock();
 
-unsigned int bank(int);
+void checkRC(int);
 
+unsigned int bank(int);
 void bookSeats(unsigned int, int);
+
+void unbookSeats(unsigned int, int);
 
 void printArray(unsigned int *);
 void printInfo();
@@ -57,6 +60,8 @@ bool checkAvailableSeats(unsigned int);
 bool checkRemainingSeats();
 
 unsigned int transaction();
+
+void unbookSeats(unsigned int seats, int id);
 
 int main(int argc, char* argv[]){
 
@@ -133,6 +138,7 @@ void *customer(void *x) {
     clock_gettime(CLOCK_REALTIME, &servStart);
 
     rc = pthread_mutex_lock(&operatorsLock);
+    checkRC(rc);
 
     clock_gettime(CLOCK_REALTIME, &waitStart);
 
@@ -144,41 +150,47 @@ void *customer(void *x) {
     clock_gettime(CLOCK_REALTIME, &waitEnd);
 
     // Customer being served..
-
     --telephonist;
 
     rc = pthread_mutex_unlock(&operatorsLock);
+    checkRC(rc);
 
     rc = pthread_mutex_lock(&avgWaitTimeLock);
+    checkRC(rc);
     *avgWaitTime_ptr = *avgWaitTime_ptr + (waitEnd.tv_sec - waitStart.tv_sec);
     rc = pthread_mutex_unlock(&avgWaitTimeLock);
+    checkRC(rc);
 
     sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
     if (checkRemainingSeats()) {
 
         rc = pthread_mutex_lock(&screenLock);
+        checkRC(rc);
         Clock();
         printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n");
         rc = pthread_mutex_unlock(&screenLock);
+        checkRC(rc);
 
     } else {
 
         if (checkAvailableSeats(seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH))) {
 
-            if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
+            bookSeats(seats, id);
 
-                bookSeats(seats, id);
+            if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
                 unsigned int cost = bank(seats);
                 unsigned int transactionID = transaction();
 
                 rc = pthread_mutex_lock(&screenLock);
+                checkRC(rc);
                 Clock();
                 printf("Οι θέσεις για τον πελάτη %03d δεσμεύθηκαν επιτυχώς\n", id);
                 printf("           ");
                 printf("Κωδικός Συναλλαγής: %03d | ", transactionID);
                 rc = pthread_mutex_lock(&arrayLock);
+                checkRC(rc);
                 printf("Θέσεις: ");
                 for (int i = 0; i < N_SEATS; i++) {
                     if (seatsArray[i] == id) {
@@ -187,39 +199,52 @@ void *customer(void *x) {
                 }
                 printf("| ");
                 rc = pthread_mutex_unlock(&arrayLock);
-                printf("Κόστος: %03d\u20AC\n", cost);
+                checkRC(rc);
+                printf("Κόστος: %03d\u20AC\n\n", cost);
                 rc = pthread_mutex_unlock(&screenLock);
+                checkRC(rc);
 
             } else {
+                unbookSeats(seats, id);
                 rc = pthread_mutex_lock(&screenLock);
+                checkRC(rc);
                 Clock();
-                printf("Η κράτηση ματαιώθηκε γιατί η συναλλαγή με την πιστωτική κάρτα δεν έγινε αποδεκτή\n");
+                printf("Η κράτηση ματαιώθηκε γιατί η συναλλαγή με την πιστωτική κάρτα δεν έγινε αποδεκτή\n\n");
                 rc = pthread_mutex_unlock(&screenLock);
+                checkRC(rc);
             }
         }
     }
 
     rc = pthread_mutex_lock(&operatorsLock);
+    checkRC(rc);
 
     // Customer served successfully
     ++(*served_ptr);
-
+    rc = clock_gettime(CLOCK_REALTIME, &servEnd);
+    checkRC(rc);
     ++telephonist;
     rc = pthread_cond_broadcast(&cond);
+    checkRC(rc);
     rc = pthread_mutex_unlock(&operatorsLock);
-    rc = clock_gettime(CLOCK_REALTIME, &servEnd);
+    checkRC(rc);
+
 
     rc = pthread_mutex_lock(&avgServingTimeLock);
+    checkRC(rc);
     *avgServingTime_ptr = *avgServingTime_ptr + (servEnd.tv_sec - servStart.tv_sec);
     rc = pthread_mutex_unlock(&avgServingTimeLock);
+    checkRC(rc);
 
     pthread_exit(NULL); //return
 }
 
 unsigned int transaction() {
     int rc = pthread_mutex_lock(&transactionLock);
+    checkRC(rc);
     unsigned int transactionID = ++(*transactions_ptr);
     rc = pthread_mutex_unlock(&transactionLock);
+    checkRC(rc);
     return transactionID;
 }
 
@@ -261,27 +286,56 @@ void Clock() {
 
 unsigned int bank(int numOfSeats) {
     int rc = pthread_mutex_lock(&bankLock);
+    checkRC(rc);
     unsigned int cost = numOfSeats * C_SEAT;
     *profit_ptr += (cost);
     rc = pthread_mutex_unlock(&bankLock);
+    checkRC(rc);
     return cost;
 }
 
 void bookSeats(unsigned int numOfSeats, int custID) {
     int rc = pthread_mutex_lock(&arrayLock);
-    int temp = seats;
+    checkRC(rc);
+    int temp = numOfSeats;
     for (int i = 0; temp > 0 && i < N_SEATS; i++) {
         if (seatsArray[i] == 0) {
             seatsArray[i] = custID;
             temp--;
         }
     }
-    (*remainingSeats_ptr) -= seats;
+    (*remainingSeats_ptr) -= numOfSeats;
     rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
+}
+
+void unbookSeats(unsigned int numOfSeats, int custID) {
+    int rc = pthread_mutex_lock(&arrayLock);
+    checkRC(rc);
+    int temp = numOfSeats;
+    for (int i = 0; temp > 0 && i < N_SEATS; i++) {
+        if (seatsArray[i] == custID) {
+            seatsArray[i] = 0;
+            temp--;
+        }
+    }
+    (*remainingSeats_ptr) += numOfSeats;
+    rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
+}
+
+void checkRC(int rc) {
+    if (rc) {
+        pthread_mutex_lock(&screenLock);
+        printf("Error: rc");
+        pthread_mutex_unlock(&screenLock);
+        exit(-1);
+    }
 }
 
 bool checkAvailableSeats(unsigned int choice) {
     int rc = pthread_mutex_lock(&arrayLock);
+    checkRC(rc);
     bool result = (choice <= (*remainingSeats_ptr));
     if (!result) {
         pthread_mutex_lock(&screenLock);
@@ -295,13 +349,16 @@ bool checkAvailableSeats(unsigned int choice) {
 
 bool checkRemainingSeats() {
     int rc = pthread_mutex_lock(&arrayLock);
+    checkRC(rc);
     bool result = (*remainingSeats_ptr == 0);
     rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
     return result;
 }
 
 void printArray(unsigned int *arr) {
     int rc = pthread_mutex_lock(&arrayLock);
+    checkRC(rc);
     int printCounter = 1;
     printf("| ");
     for (int i = 0; i < N_SEATS; i++) {
@@ -317,6 +374,7 @@ void printArray(unsigned int *arr) {
         printCounter += 1;
     }
     rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
 }
 
 void printDuration(long int minutes, long int seconds, long int totalSeconds) {
@@ -346,10 +404,12 @@ void printInfo() {
     printf("Μέσος χρόνος εξυπηρέτησης: %0.2f seconds\n", (double) avgServingTime / customers);
     printf("Εξυπηρετήθηκαν: %03d πελάτες\n", served);
     int rc = pthread_mutex_lock(&arrayLock);
+    checkRC(rc);
     printf("Δεσμευμένες Θέσεις: %d\n", N_SEATS - (*remainingSeats_ptr));
     printf("Ελεύθερες Θέσεις: %d\n", (*remainingSeats_ptr));
     rc = pthread_mutex_unlock(&arrayLock);
+    checkRC(rc);
     printf("Συναλλαγές: %d\n", (*transactions_ptr));
-    printf("Έσοδα: %d\u20AC\n", (*profit_ptr));
+    printf("Κέρδη: %d\u20AC\n", (*profit_ptr));
     printf("\nExiting..\n");
 }
