@@ -90,16 +90,11 @@ int main(int argc, char* argv[]){
 
     void *customer(void *x);
 
-    rc = pthread_mutex_init(&operatorsLock, NULL);
-    checkRC(rc);
-    rc = pthread_mutex_init(&bankLock, NULL);
-    checkRC(rc);
-    rc = pthread_mutex_init(&transactionLock, NULL);
-    checkRC(rc);
-    rc = pthread_mutex_init(&avgWaitTimeLock, NULL);
-    checkRC(rc);
-    rc = pthread_mutex_init(&avgServingTimeLock, NULL);
-    checkRC(rc);
+    rc = pthread_mutex_init(&operatorsLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&bankLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&transactionLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&avgWaitTimeLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&avgServingTimeLock, NULL); checkRC(rc);
     rc = pthread_mutex_init(&arrayLock, NULL);
     checkRC(rc);
     rc = pthread_mutex_init(&screenLock, NULL);
@@ -144,15 +139,13 @@ void *customer(void *x) {
     // Customer calling..
     clock_gettime(CLOCK_REALTIME, &servStart);
 
-    rc = pthread_mutex_lock(&operatorsLock);
-    checkRC(rc);
+    rc = pthread_mutex_lock(&operatorsLock); checkRC(rc);
 
     clock_gettime(CLOCK_REALTIME, &waitStart);
 
     while (telephonist == 0) {
         // Customer couldn't find telephonist available. Blocked..
-        rc = pthread_cond_wait(&cond, &operatorsLock);
-        checkRC(rc);
+        rc = pthread_cond_wait(&cond, &operatorsLock); checkRC(rc);
     }
 
     clock_gettime(CLOCK_REALTIME, &waitEnd);
@@ -160,14 +153,11 @@ void *customer(void *x) {
     // Customer being served..
     --telephonist;
 
-    rc = pthread_mutex_unlock(&operatorsLock);
-    checkRC(rc);
+    rc = pthread_mutex_unlock(&operatorsLock); checkRC(rc);
 
-    rc = pthread_mutex_lock(&avgWaitTimeLock);
-    checkRC(rc);
+    rc = pthread_mutex_lock(&avgWaitTimeLock); checkRC(rc);
     *avgWaitTime_ptr = *avgWaitTime_ptr + (waitEnd.tv_sec - waitStart.tv_sec);
-    rc = pthread_mutex_unlock(&avgWaitTimeLock);
-    checkRC(rc);
+    rc = pthread_mutex_unlock(&avgWaitTimeLock); checkRC(rc);
 
     sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
