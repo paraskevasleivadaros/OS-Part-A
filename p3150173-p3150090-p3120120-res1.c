@@ -406,5 +406,5 @@ void printInfo() {
     printf("Ελεύθερες Θέσεις: %d\n", (*remainingSeats_ptr));
     printf("Συναλλαγές: %d\n", (*transactions_ptr));
     printf("Κέρδη: %d\u20AC\n", (*profit_ptr));
-    printf("\nExiting..\n");
+    printf("\nΈξοδος..\n");
 }
