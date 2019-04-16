@@ -94,7 +94,8 @@ int main(int argc, char* argv[]){
     rc = pthread_mutex_init(&bankLock, NULL); checkRC(rc);
     rc = pthread_mutex_init(&transactionLock, NULL); checkRC(rc);
     rc = pthread_mutex_init(&avgWaitTimeLock, NULL); checkRC(rc);
-    rc = pthread_mutex_init(&avgServingTimeLock, NULL); checkRC(rc);
+    rc = pthread_mutex_init(&avgServingTimeLock, NULL);
+    checkRC(rc);
     rc = pthread_mutex_init(&arrayLock, NULL);
     checkRC(rc);
     rc = pthread_mutex_init(&screenLock, NULL);
