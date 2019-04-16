@@ -177,18 +177,16 @@ void *customer(void *x) {
                 Clock();
                 printf("Οι θέσεις για τον πελάτη %03d δεσμεύθηκαν επιτυχώς\n", id);
                 printf("           ");
-                printf("Κωδικός Συναλλαγής: %03d\n", transactionID);
+                printf("Κωδικός Συναλλαγής: %03d | ", transactionID);
                 rc = pthread_mutex_lock(&arrayLock);
-                printf("           ");
                 printf("Θέσεις: ");
                 for (int i = 0; i < N_SEATS; i++) {
                     if (seatsArray[i] == id) {
                         printf("%03d ", i + 1);
                     }
                 }
-                printf("\n");
+                printf("| ");
                 rc = pthread_mutex_unlock(&arrayLock);
-                printf("           ");
                 printf("Κόστος: %03d\u20AC\n", cost);
                 rc = pthread_mutex_unlock(&screenLock);
 
