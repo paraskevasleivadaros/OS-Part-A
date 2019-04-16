@@ -64,7 +64,7 @@ unsigned int transaction();
 int main(int argc, char* argv[]){
 
     if (argc != 3) {
-        printf("Please enter only the number of customers and the seed!");
+        printf("Παρακαλώ δώστε μόνο το πλήθος των πελατών και τον σπόρο");
         exit(-1);
     }
 
@@ -75,11 +75,11 @@ int main(int argc, char* argv[]){
 
     // Checking if number of customers is positive
     if (customers <= 0) {
-        printf("Please enter only positive values in arguments!\n");
+        printf("Παρακαλώ δώστε μόνο θετική τιμή για το πλήθος των πελατών\n");
         exit(-2);
     }
 
-    printf("Customers to be served: %03d\n\n", customers);
+    printf("Πελάτες προς εξυπηρέτηση: %03d\n\n", customers);
 
     int rc;
 
@@ -190,21 +190,20 @@ void *customer(void *x) {
                 rc = pthread_mutex_lock(&screenLock);
                 checkRC(rc);
                 Clock();
-                printf("Οι θέσεις για τον πελάτη %03d δεσμεύθηκαν επιτυχώς\n", id);
-                printf("           ");
-                printf("Κωδικός Συναλλαγής: %03d | ", transactionID);
+
+                printf("Η κράτηση ολοκληρώθηκε επιτυχώς. Ο αριθμός συναλλαγής είναι %03d", transactionID);
+
                 rc = pthread_mutex_lock(&arrayLock);
                 checkRC(rc);
-                printf("Θέσεις: ");
+                printf(", οι θέσεις σας είναι οι: ");
                 for (int i = 0; i < N_SEATS; i++) {
                     if (seatsArray[i] == id) {
                         printf("%03d ", i + 1);
                     }
                 }
-                printf("| ");
                 rc = pthread_mutex_unlock(&arrayLock);
                 checkRC(rc);
-                printf("Κόστος: %03d\u20AC\n\n", cost);
+                printf("και το κόστος της συναλλαγής είναι %03d\u20AC\n\n", cost);
                 rc = pthread_mutex_unlock(&screenLock);
                 checkRC(rc);
 
@@ -266,7 +265,7 @@ double cardRandom(double min, double max) {
 
 void startTimer(){
     Clock();
-    printf("Starting Timer\n\n");
+    printf("Έναρξη Χρονομέτρησης\n\n");
     time_t t = time(NULL);
     start = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestStart);
@@ -275,7 +274,7 @@ void startTimer(){
 void stopTimer(){
     printf("\n");
     Clock();
-    printf("Stopping Timer\n\n");
+    printf("Σταμάτημα Χρονομέτρησης\n\n");
     time_t t = time(NULL);
     end = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestEnd);
@@ -330,7 +329,7 @@ void unbookSeats(unsigned int numOfSeats, int custID) {
 void checkRC(int rc) {
     if (rc) {
         pthread_mutex_lock(&screenLock);
-        printf("Error: rc");
+        printf("Σφάλμα: rc");
         pthread_mutex_unlock(&screenLock);
         exit(-1);
     }
@@ -394,8 +393,8 @@ void printInfo() {
     unsigned long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
     unsigned long int minutes = totalSeconds / 60;
     unsigned long int seconds = totalSeconds % 60;
-    printf("Start [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
-    printf("End   [%d:%d:%d]\n", end.tm_hour, end.tm_min, end.tm_sec);
+    printf("Αρχή  [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("Τέλος [%d:%d:%d]\n", end.tm_hour, end.tm_min, end.tm_sec);
     printDuration(minutes, seconds, totalSeconds);
     printf("\n");
     printArray(seatsArray);
