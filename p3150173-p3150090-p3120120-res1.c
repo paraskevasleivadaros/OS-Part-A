@@ -4,30 +4,31 @@
 
 #include "p3150173-p3150090-p3120120-res1.h"
 
-unsigned int profit = 0;
-unsigned int transactions = 0;
-unsigned int served = 0;
-unsigned int customers;
-unsigned int telephonist = N_TEL;
-unsigned int remainingSeats = N_SEATS;
 unsigned int seed;
 unsigned int seats;
+unsigned int customers;
+unsigned int profit = 0;
+unsigned int served = 0;
+unsigned int transactions = 0;
+unsigned int telephonist = N_TEL;
+unsigned int remainingSeats = N_SEATS;
 
-unsigned int *profit_ptr = &profit;
-unsigned int *transactions_ptr = &transactions;
-unsigned int *served_ptr = &served;
-unsigned int *remainingSeats_ptr = &remainingSeats;
 unsigned int seatsArray[N_SEATS];
+unsigned int *profit_ptr = &profit;
+unsigned int *served_ptr = &served;
+unsigned int *transactions_ptr = &transactions;
+unsigned int *remainingSeats_ptr = &remainingSeats;
 
 // Calculate time taken by a request
 struct timespec requestStart, requestEnd;
 struct tm start;
 struct tm end;
 
-unsigned long int avgServingTime;
 unsigned long int avgWaitTime;
-unsigned long int *avgServingTime_ptr = &avgServingTime;
+unsigned long int avgServingTime;
+
 unsigned long int *avgWaitTime_ptr = &avgWaitTime;
+unsigned long int *avgServingTime_ptr = &avgServingTime;
 
 unsigned int sleepRandom(int, int);
 unsigned int choiceRandom(int, int);
@@ -53,7 +54,7 @@ pthread_mutex_t avgWaitTimeLock;
 pthread_mutex_t avgServingTimeLock;
 pthread_mutex_t arrayLock;
 pthread_mutex_t screenLock;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond;
 
 bool checkAvailableSeats(unsigned int);
 bool checkRemainingSeats();
@@ -100,6 +101,8 @@ int main(int argc, char* argv[]){
     rc = pthread_mutex_init(&arrayLock, NULL);
     checkRC(rc);
     rc = pthread_mutex_init(&screenLock, NULL);
+    checkRC(rc);
+    rc = pthread_cond_init(&cond, NULL);
     checkRC(rc);
 
     startTimer();
