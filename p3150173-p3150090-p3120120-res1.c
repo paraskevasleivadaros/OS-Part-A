@@ -174,7 +174,7 @@ void *customer(void *x) {
         rc = pthread_mutex_lock(&screenLock);
         checkRC(rc);
         Clock();
-        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n");
+        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n\n");
         rc = pthread_mutex_unlock(&screenLock);
         checkRC(rc);
 
@@ -276,7 +276,7 @@ void startTimer(){
 void stopTimer(){
     printf("\n");
     Clock();
-    printf("Σταμάτημα Χρονομέτρησης\n\n");
+    printf("Λήξη Χρονομέτρησης\n\n");
     time_t t = time(NULL);
     end = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestEnd);
@@ -363,6 +363,7 @@ bool checkRemainingSeats() {
 }
 
 void printArray(unsigned int *arr) {
+    printf("Πλάνο Θέσεων:\n");
     int printCounter = 1;
     printf("| ");
     for (int i = 0; i < N_SEATS; i++) {
