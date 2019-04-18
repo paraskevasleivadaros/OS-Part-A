@@ -138,7 +138,6 @@ void *customer(void *x) {
     struct timespec waitStart, waitEnd, servStart, servEnd;
 
     // Customer calling..
-    clock_gettime(CLOCK_REALTIME, &servStart);
 
     rc = pthread_mutex_lock(&operatorsLock);
     checkRC(rc);
@@ -164,6 +163,8 @@ void *customer(void *x) {
     *avgWaitTime_ptr = *avgWaitTime_ptr + (waitEnd.tv_sec - waitStart.tv_sec);
     rc = pthread_mutex_unlock(&avgWaitTimeLock);
     checkRC(rc);
+
+    clock_gettime(CLOCK_REALTIME, &servStart);
 
     sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
@@ -393,8 +394,8 @@ void printInfo() {
     unsigned long int totalSeconds = requestEnd.tv_sec - requestStart.tv_sec;
     unsigned long int minutes = totalSeconds / 60;
     unsigned long int seconds = totalSeconds % 60;
-    printf("Αρχή  [%d:%d:%d]\n", start.tm_hour, start.tm_min, start.tm_sec);
-    printf("Τέλος [%d:%d:%d]\n", end.tm_hour, end.tm_min, end.tm_sec);
+    printf("Αρχή  [%02d:%02d:%02d]\n", start.tm_hour, start.tm_min, start.tm_sec);
+    printf("Τέλος [%02d:%02d:%02d]\n", end.tm_hour, end.tm_min, end.tm_sec);
     printDuration(minutes, seconds, totalSeconds);
     printf("\n");
     printArray(seatsArray);
