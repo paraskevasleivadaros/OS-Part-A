@@ -64,7 +64,7 @@ unsigned int transaction();
 int main(int argc, char* argv[]){
 
     if (argc != 3) {
-        printf("Παρακαλώ δώστε μόνο το πλήθος των πελατών και τον σπόρο");
+        printf("Παρακαλώ δώστε μόνο το πλήθος των πελατών και τον σπόρο\n");
         exit(-1);
     }
 
@@ -106,6 +106,7 @@ int main(int argc, char* argv[]){
     checkRC(rc);
 
     startTimer();
+
     for (int i = 0; i < customers; i++) {
         id[i] = i + 1;
         rc = pthread_create(&threads[i], NULL, customer, (void *) id[i]);
@@ -330,6 +331,7 @@ void unbookSeats(unsigned int numOfSeats, int custID) {
 void checkRC(int rc) {
     if (rc) {
         pthread_mutex_lock(&screenLock);
+        Clock();
         printf("Σφάλμα: rc");
         pthread_mutex_unlock(&screenLock);
         exit(-1);
@@ -343,7 +345,7 @@ bool checkAvailableSeats(unsigned int choice) {
     if (!result) {
         pthread_mutex_lock(&screenLock);
         Clock();
-        printf("Η κράτηση ματαιώθηκε γιατί δεν υπάρχουν αρκετές διαθέσιμες θέσεις\n");
+        printf("Η κράτηση ματαιώθηκε γιατί δεν υπάρχουν αρκετές διαθέσιμες θέσεις\n\n");
         pthread_mutex_unlock(&screenLock);
     }
     rc = pthread_mutex_unlock(&arrayLock);
