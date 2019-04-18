@@ -14,6 +14,7 @@ unsigned int telephonist = N_TEL;
 unsigned int remainingSeats = N_SEATS;
 
 unsigned int seatsPlan[N_SEATS];
+unsigned int *seedPtr = &seed;
 unsigned int *profitPtr = &profit;
 unsigned int *servedCounterPtr = &servedCounter;
 unsigned int *transactionsPtr = &transactions;
@@ -43,8 +44,10 @@ void check_rc(int);
 unsigned int receivePayment(int);
 
 unsigned int logTransaction();
-void bookSeats(unsigned int, int);
-void unbookSeats(unsigned int, int);
+
+void bookSeats(unsigned int, unsigned int);
+
+void unbookSeats(unsigned int, unsigned int);
 
 void printSeatsPlan();
 void printInfo();
@@ -72,7 +75,7 @@ int main(int argc, char* argv[]){
     // Converting string type to integer type
     // using function atoi
     customers = atoi(argv[1]);
-    seed = atoi(argv[2]);
+    *seedPtr = atoi(argv[2]);
 
     // Checking if number of customers is positive
     if (customers <= 0) {
@@ -135,7 +138,7 @@ int main(int argc, char* argv[]){
 void *customer(void *x) {
 
     int rc;
-    int id = (int *) x;
+    unsigned int id = (int *) x;
 
     struct timespec waitStart, waitEnd, servStart, servEnd;
 
@@ -232,6 +235,7 @@ void *customer(void *x) {
     ++telephonist;
     rc = pthread_cond_broadcast(&availableOperators);
     check_rc(rc);
+
     rc = pthread_mutex_unlock(&operatorsLock);
     check_rc(rc);
 
@@ -241,19 +245,19 @@ void *customer(void *x) {
     rc = pthread_mutex_unlock(&avgServingTimeLock);
     check_rc(rc);
 
-    pthread_exit(NULL); //return
+    pthread_exit(NULL); // return
 }
 
 unsigned int sleepRandom(int min, int max) {
-    return (rand_r(&seed) % (max - min + 1)) + min;
+    return (rand_r(seedPtr) % (max - min + 1)) + min;
 }
 
 unsigned int choiceRandom(int min, int max) {
-    return (rand_r(&seed) % (max - min + 1)) + min;
+    return (rand_r(seedPtr) % (max - min + 1)) + min;
 }
 
 double cardRandom(double min, double max) {
-    double f = (double) rand_r(&seed) / RAND_MAX;
+    double f = (double) rand_r(seedPtr) / RAND_MAX;
     return min + f * (max - min);
 }
 
@@ -266,11 +270,11 @@ void startTimer(){
 }
 
 void stopTimer(){
-    Clock();
-    printf("Λήξη Χρονομέτρησης\n\n");
     time_t t = time(NULL);
     end = *localtime(&t);
     clock_gettime(CLOCK_REALTIME, &requestEnd);
+    Clock();
+    printf("Λήξη Χρονομέτρησης\n\n");
 }
 
 void Clock() {
@@ -283,7 +287,7 @@ unsigned int receivePayment(int numOfSeats) {
     int rc = pthread_mutex_lock(&paymentLock);
     check_rc(rc);
     unsigned int cost = numOfSeats * C_SEAT;
-    *profitPtr += (cost);
+    *profitPtr += cost;
     rc = pthread_mutex_unlock(&paymentLock);
     check_rc(rc);
     return cost;
@@ -298,7 +302,7 @@ unsigned int logTransaction() {
     return transactionID;
 }
 
-void bookSeats(unsigned int numOfSeats, int custID) {
+void bookSeats(unsigned int numOfSeats, unsigned int custID) {
     int rc = pthread_mutex_lock(&seatsPlanLock);
     check_rc(rc);
     int temp = numOfSeats;
@@ -313,7 +317,7 @@ void bookSeats(unsigned int numOfSeats, int custID) {
     check_rc(rc);
 }
 
-void unbookSeats(unsigned int numOfSeats, int custID) {
+void unbookSeats(unsigned int numOfSeats, unsigned int custID) {
     int rc = pthread_mutex_lock(&seatsPlanLock);
     check_rc(rc);
     int temp = numOfSeats;
