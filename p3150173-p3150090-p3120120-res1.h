@@ -7,12 +7,9 @@
 
 #endif //POSIX_THREADS_P3150173_P3150090_RES1_H
 
-#include <time.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <string.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <pthread.h>
 #include <stdbool.h>
 
