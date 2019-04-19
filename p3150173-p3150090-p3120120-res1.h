@@ -2,10 +2,8 @@
 // Created by paras on 23-Mar-19.
 //
 
-#ifndef POSIX_THREADS_P3150173_P3150090_RES1_H
-#define POSIX_THREADS_P3150173_P3150090_RES1_H
-
-#endif //POSIX_THREADS_P3150173_P3150090_RES1_H
+#ifndef P3150173_P3150090_P3120120_RES1_H
+#define P3150173_P3150090_P3120120_RES1_H
 
 #include <stdio.h>
 #include <unistd.h>
@@ -21,3 +19,5 @@
 #define T_SEAT_HIGH 10
 #define P_CARD_SUCCESS 0.9
 #define C_SEAT 20
+
+#endif

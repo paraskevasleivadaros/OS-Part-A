@@ -56,6 +56,7 @@ void *customer(void *x);
 bool checkAvailableSeats(unsigned int);
 
 bool POS(unsigned int, unsigned int);
+
 bool checkRemainingSeats();
 
 pthread_mutex_t operatorsLock;
