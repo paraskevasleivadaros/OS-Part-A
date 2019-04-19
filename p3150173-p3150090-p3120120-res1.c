@@ -51,6 +51,8 @@ void unbookSeats(unsigned int, unsigned int);
 void printSeatsPlan();
 void printInfo();
 
+void *customer(void *x);
+
 bool checkAvailableSeats(unsigned int);
 
 bool checkRemainingSeats();
@@ -86,8 +88,6 @@ int main(int argc, char* argv[]){
 
     pthread_t threads[customers];
     int id[customers];
-
-    void *customer(void *x);
 
     check_rc(pthread_mutex_init(&operatorsLock, NULL));
     check_rc(pthread_mutex_init(&paymentLock, NULL));
