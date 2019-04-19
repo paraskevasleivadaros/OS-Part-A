@@ -153,14 +153,7 @@ void *customer(void *x) {
 
     clock_gettime(CLOCK_REALTIME, &servStart);
 
-    if (!checkRemainingSeats()) {
-
-        check_rc(pthread_mutex_lock(&screenLock));
-        Clock();
-        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n\n");
-        check_rc(pthread_mutex_unlock(&screenLock));
-
-    } else {
+    if (checkRemainingSeats()) {
 
         unsigned int seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
 
@@ -324,6 +317,12 @@ bool checkAvailableSeats(unsigned int choice) {
 bool checkRemainingSeats() {
     check_rc(pthread_mutex_lock(&seatsPlanLock));
     bool result = (*remainingSeatsPtr != 0);
+    if (!result) {
+        check_rc(pthread_mutex_lock(&screenLock));
+        Clock();
+        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n\n");
+        check_rc(pthread_mutex_unlock(&screenLock));
+    }
     check_rc(pthread_mutex_unlock(&seatsPlanLock));
     return result;
 }
