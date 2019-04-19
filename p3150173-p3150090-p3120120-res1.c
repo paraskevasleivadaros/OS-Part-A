@@ -40,7 +40,7 @@ void Clock();
 
 void check_rc(int);
 
-unsigned int receivePayment(int);
+unsigned int Cost(int);
 
 unsigned int logTransaction();
 
@@ -183,22 +183,19 @@ void *customer(void *x) {
 
         sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
-        unsigned int seats;
+        unsigned int seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
 
-        if (checkAvailableSeats(seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH))) {
+        if (checkAvailableSeats(seats)) {
 
             bookSeats(seats, id);
 
             if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
 
-                unsigned int amount = receivePayment(seats);
-                unsigned int transactionID = logTransaction();
-
                 rc = pthread_mutex_lock(&screenLock);
                 check_rc(rc);
 
                 Clock();
-                printf("Η κράτηση ολοκληρώθηκε επιτυχώς. Ο αριθμός συναλλαγής είναι %03d", transactionID);
+                printf("Η κράτηση ολοκληρώθηκε επιτυχώς. Ο αριθμός συναλλαγής είναι %03d", logTransaction());
 
                 rc = pthread_mutex_lock(&seatsPlanLock);
                 check_rc(rc);
@@ -210,7 +207,8 @@ void *customer(void *x) {
                 }
                 rc = pthread_mutex_unlock(&seatsPlanLock);
                 check_rc(rc);
-                printf("και το κόστος της συναλλαγής είναι %03d\u20AC\n\n", amount);
+
+                printf("και το κόστος της συναλλαγής είναι %03d\u20AC\n\n", Cost(seats));
                 rc = pthread_mutex_unlock(&screenLock);
                 check_rc(rc);
 
@@ -289,7 +287,7 @@ void Clock() {
     printf("[%02d:%02d:%02d] ", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-unsigned int receivePayment(int numOfSeats) {
+unsigned int Cost(int numOfSeats) {
     int rc = pthread_mutex_lock(&paymentLock);
     check_rc(rc);
     unsigned int cost = numOfSeats * C_SEAT;
