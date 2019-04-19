@@ -55,6 +55,7 @@ void *customer(void *x);
 
 bool checkAvailableSeats(unsigned int);
 
+bool POS(unsigned int, unsigned int);
 bool checkRemainingSeats();
 
 pthread_mutex_t operatorsLock;
@@ -163,7 +164,7 @@ void *customer(void *x) {
 
             bookSeats(seats, id);
 
-            if (cardRandom(0.0, 1.0) < P_CARD_SUCCESS) {
+            if (POS(seats, id)) {
 
                 check_rc(pthread_mutex_lock(&screenLock));
 
@@ -181,15 +182,6 @@ void *customer(void *x) {
 
                 printf("και το κόστος της συναλλαγής είναι %03d\u20AC\n\n", Cost(seats));
                 check_rc(pthread_mutex_unlock(&screenLock));
-
-            } else {
-
-                unbookSeats(seats, id);
-                check_rc(pthread_mutex_lock(&screenLock));
-                Clock();
-                printf("Η κράτηση ματαιώθηκε γιατί η συναλλαγή με την πιστωτική κάρτα δεν έγινε αποδεκτή\n\n");
-                check_rc(pthread_mutex_unlock(&screenLock));
-
             }
         }
     }
@@ -301,6 +293,19 @@ void check_rc(int rc) {
     }
 }
 
+bool checkRemainingSeats() {
+    check_rc(pthread_mutex_lock(&seatsPlanLock));
+    bool result = (*remainingSeatsPtr != 0);
+    if (!result) {
+        check_rc(pthread_mutex_lock(&screenLock));
+        Clock();
+        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n\n");
+        check_rc(pthread_mutex_unlock(&screenLock));
+    }
+    check_rc(pthread_mutex_unlock(&seatsPlanLock));
+    return result;
+}
+
 bool checkAvailableSeats(unsigned int choice) {
     check_rc(pthread_mutex_lock(&seatsPlanLock));
     bool result = (choice <= (*remainingSeatsPtr));
@@ -314,16 +319,15 @@ bool checkAvailableSeats(unsigned int choice) {
     return result;
 }
 
-bool checkRemainingSeats() {
-    check_rc(pthread_mutex_lock(&seatsPlanLock));
-    bool result = (*remainingSeatsPtr != 0);
+bool POS(unsigned int numOfSeats, unsigned int custID) {
+    bool result = (cardRandom(0.0, 1.0) < P_CARD_SUCCESS);
     if (!result) {
+        unbookSeats(numOfSeats, custID);
         check_rc(pthread_mutex_lock(&screenLock));
         Clock();
-        printf("Η κράτηση ματαιώθηκε γιατί το θέατρο είναι γεμάτο\n\n");
+        printf("Η κράτηση ματαιώθηκε γιατί η συναλλαγή με την πιστωτική κάρτα δεν έγινε αποδεκτή\n\n");
         check_rc(pthread_mutex_unlock(&screenLock));
     }
-    check_rc(pthread_mutex_unlock(&seatsPlanLock));
     return result;
 }
 
