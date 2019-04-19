@@ -233,9 +233,12 @@ void *customer(void *x) {
 
     // Customer served successfully
     ++(*servedCounterPtr);
+
     rc = clock_gettime(CLOCK_REALTIME, &servEnd);
     check_rc(rc);
+
     ++telephonist;
+
     rc = pthread_cond_broadcast(&availableOperators);
     check_rc(rc);
 
