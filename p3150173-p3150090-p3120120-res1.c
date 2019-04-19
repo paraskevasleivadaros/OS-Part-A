@@ -162,9 +162,9 @@ void *customer(void *x) {
 
     } else {
 
-        sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
-
         unsigned int seats = choiceRandom(N_SEAT_LOW, N_SEAT_HIGH);
+
+        sleep(sleepRandom(T_SEAT_LOW, T_SEAT_HIGH));
 
         if (checkAvailableSeats(seats)) {
 
