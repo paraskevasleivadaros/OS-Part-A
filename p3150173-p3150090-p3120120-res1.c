@@ -351,7 +351,7 @@ void printSeatsPlan() {
         } else {
             printf("Θέση %03d: Πελάτης %03d | ", i + 1, seatsPlan[i]);
         }
-        if (printCounter == 6) {
+        if (printCounter == 4) {
             printf("\n| ");
             printCounter = 0;
         }
