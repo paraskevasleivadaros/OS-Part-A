@@ -1,6 +1,5 @@
 # POSIX-Threads
 Project for the course "Λειτουργικά Συστήματα" | CS - AUEB<br>
-Λειβαδάρος Παρασκευάς | 3150090 - Γιάννης Τριάντος | 3150173 - Στάθης Μπέτσης | 3120120
 
 ## How to Run
 cd path (το path του project)<br>
