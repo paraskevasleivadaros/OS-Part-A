@@ -102,4 +102,4 @@ pthread_mutex_init(), pthread_cond_init(), pthread_create(), pthread_join(), pth
 **● Γραμμές 366-384:** Η printInfo() εμφανίζει στην κονσόλα την Έναρξη και την Λήξη της χρονομέτρησης της εκτέλεσης όλων των νημάτων-παιδιών της main, καλεί την printDuration(), την printSeatsPlan() και στην συνέχεια τον μέσο χρόνο αναμονής, εξυπηρέτησης, το πλήθος των πελατών που εξυπηρετήθηκαν, το πλήθος των θέσεων που δεσμεύθηκαν, το πλήθος των θέσεων που έμειναν κενές, το πλήθος των συναλλαγών και το πλήθος των κερδών.<br>
 
 ## Copyright & License
-[MIT](https://github.com/paraskevasleivadaros/OS-Part-A/blob/main/LICENSE)
+[MIT](https://github.com/paraskevasleivadaros/OS-Part-A/blob/master/LICENSE)
