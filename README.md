@@ -101,5 +101,8 @@ pthread_mutex_init(), pthread_cond_init(), pthread_create(), pthread_join(), pth
 **● Γραμμές 348-364:** Η printSeatsPlan() εμφανίζει στην κονσόλα το πλάνο των θέσεων του θεάτρου με τον εξής τρόπο: σε κάθε γραμμή εμφανίζονται 4 θέσεις χωριζόμενες από κάθετες παύλες “|”.<br>
 **● Γραμμές 366-384:** Η printInfo() εμφανίζει στην κονσόλα την Έναρξη και την Λήξη της χρονομέτρησης της εκτέλεσης όλων των νημάτων-παιδιών της main, καλεί την printDuration(), την printSeatsPlan() και στην συνέχεια τον μέσο χρόνο αναμονής, εξυπηρέτησης, το πλήθος των πελατών που εξυπηρετήθηκαν, το πλήθος των θέσεων που δεσμεύθηκαν, το πλήθος των θέσεων που έμειναν κενές, το πλήθος των συναλλαγών και το πλήθος των κερδών.<br>
 
-## Copyright & License
+### 🛠️ Tech Stack
+[![C](https://skills.thijs.gg/icons?i=c)](https://www.open-std.org/jtc1/sc22/wg14/)
+
+### ©️ Copyright & License
 [MIT](https://github.com/paraskevasleivadaros/OS-Part-A/blob/master/LICENSE)
