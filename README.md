@@ -116,6 +116,3 @@ pthread_mutex_init(), pthread_cond_init(), pthread_create(), pthread_join(), pth
 
 ### 🛠️ Tech Stack
 [![C](https://skills.thijs.gg/icons?i=c)](https://www.open-std.org/jtc1/sc22/wg14/)
-
-### ©️ Copyright & License
-[MIT](https://github.com/paraskevasleivadaros/OS-Part-A/blob/master/LICENSE)
